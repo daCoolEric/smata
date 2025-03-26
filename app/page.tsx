@@ -139,7 +139,106 @@ const TimetableGenerator = () => {
 
   const generateTimetable = () => {
     // Implement timetable generation logic here
-    console.log(subjects);
+    interface Course {
+      name: string;
+      duration: string;
+      weeklyHours: number;
+      days: string[];
+      color: string;
+    }
+
+    interface ScheduleItem {
+      course: string;
+      startTime: string;
+      endTime: string;
+    }
+
+    interface ClassSchedule {
+      Monday: ScheduleItem[];
+      Tuesday: ScheduleItem[];
+      Wednesday: ScheduleItem[];
+      Thursday: ScheduleItem[];
+      Friday: ScheduleItem[];
+      Saturday: ScheduleItem[];
+      Sunday: ScheduleItem[];
+    }
+
+    function convertToClassSchedule(courses: Course[]): ClassSchedule {
+      // Map of short day names to full day names
+      const dayMap: Record<string, string> = {
+        Mon: "Monday",
+        Tue: "Tuesday",
+        Wed: "Wednesday",
+        Thu: "Thursday",
+        Fri: "Friday",
+        Sat: "Saturday",
+        Sun: "Sunday",
+      };
+
+      // Initialize the schedule with all days
+      const classSchedule: ClassSchedule = {
+        Monday: [],
+        Tuesday: [],
+        Wednesday: [],
+        Thursday: [],
+        Friday: [],
+        Saturday: [],
+        Sunday: [],
+      };
+
+      // Process each course
+      courses.forEach((course: Course) => {
+        // Extract start and end times from duration
+        const [startTimeStr, endTimeStr] = course.duration
+          .split(" - ")
+          .map((s) => s.trim());
+
+        // Convert time to 24-hour format without AM/PM
+        const startTime = convertTo24HourFormat(startTimeStr);
+        const endTime = convertTo24HourFormat(endTimeStr);
+
+        // Add course to each of its scheduled days
+        course.days.forEach((day: string) => {
+          const fullDayName = dayMap[day];
+          if (fullDayName) {
+            classSchedule[fullDayName as keyof ClassSchedule].push({
+              course: course.name,
+              startTime,
+              endTime,
+            });
+          }
+        });
+      });
+
+      return classSchedule;
+    }
+
+    // Helper function to convert time to 24-hour format
+    function convertTo24HourFormat(timeStr: string): string {
+      // Remove AM/PM and any whitespace
+      const timePart = timeStr.replace(/[AP]M/, "").trim();
+      const period = timeStr.includes("PM") ? "PM" : "AM";
+
+      let [hours, minutes] = timePart.split(":").map(Number);
+
+      // Convert to 24-hour format
+      if (period === "PM" && hours !== 12) {
+        hours += 12;
+      } else if (period === "AM" && hours === 12) {
+        hours = 0;
+      }
+
+      // Format with leading zeros
+      return `${hours.toString().padStart(2, "0")}:${(minutes || 0)
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    // Example usage:
+    const inputCourses: Course[] = subjects;
+
+    const classSchedule: ClassSchedule = convertToClassSchedule(inputCourses);
+    console.log(classSchedule);
   };
 
   const printTimetable = async () => {
