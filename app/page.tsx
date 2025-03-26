@@ -6,6 +6,8 @@ import { PDFDocument, rgb } from "pdf-lib";
 const TimetableGenerator = () => {
   const [name, setName] = useState("");
   const [startTime, setStartTime] = useState("08:00");
+  const [startTimePeriod, setStartTimePeriod] = useState("");
+  const [endTimePeriod, setEndTimePeriod] = useState("");
   const [endTime, setEndTime] = useState("22:00");
   const [breakDuration, setBreakDuration] = useState(15);
   const [sessionDuration, setSessionDuration] = useState(45);
@@ -25,7 +27,7 @@ const TimetableGenerator = () => {
 
   interface Subject {
     name: string;
-    priority: string;
+    duration: string;
     weeklyHours: number;
     days: string[];
     color: string;
@@ -48,6 +50,57 @@ const TimetableGenerator = () => {
     "#f1c40f",
     "#e67e22",
   ];
+  const handleStartTime = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const timeValue = e.target.value;
+    setStartTime(timeValue);
+
+    if (timeValue) {
+      const [hours, minutes] = timeValue.split(":");
+      const hourNumber = parseInt(hours, 10);
+
+      let period = "AM";
+      let displayHour = hourNumber;
+
+      if (hourNumber >= 12) {
+        period = "PM";
+        if (hourNumber > 12) {
+          displayHour = hourNumber - 12;
+        }
+      } else if (hourNumber === 0) {
+        displayHour = 12; // Midnight (12 AM)
+      }
+
+      setStartTimePeriod(`${displayHour}:${minutes} ${period}`);
+    } else {
+      setStartTimePeriod("");
+    }
+  };
+
+  const handleEndTime = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const timeValue = e.target.value;
+    setEndTime(timeValue);
+
+    if (timeValue) {
+      const [hours, minutes] = timeValue.split(":");
+      const hourNumber = parseInt(hours, 10);
+
+      let period = "AM";
+      let displayHour = hourNumber;
+
+      if (hourNumber >= 12) {
+        period = "PM";
+        if (hourNumber > 12) {
+          displayHour = hourNumber - 12;
+        }
+      } else if (hourNumber === 0) {
+        displayHour = 12; // Midnight (12 AM)
+      }
+
+      setEndTimePeriod(`${displayHour}:${minutes} ${period}`);
+    } else {
+      setEndTimePeriod("");
+    }
+  };
 
   const addSubject = () => {
     if (!subjectName.trim()) {
@@ -66,7 +119,7 @@ const TimetableGenerator = () => {
 
     const newSubject: Subject = {
       name: subjectName,
-      priority,
+      duration: `${startTimePeriod} - ${endTimePeriod} `,
       weeklyHours,
       days: selectedDays,
       color: colors[subjects.length % colors.length],
@@ -74,7 +127,6 @@ const TimetableGenerator = () => {
 
     setSubjects([...subjects, newSubject]);
     setSubjectName("");
-    setPriority("medium");
     setWeeklyHours(4);
   };
 
@@ -87,6 +139,7 @@ const TimetableGenerator = () => {
 
   const generateTimetable = () => {
     // Implement timetable generation logic here
+    console.log(subjects);
   };
 
   const printTimetable = async () => {
@@ -154,79 +207,9 @@ const TimetableGenerator = () => {
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block font-medium mb-1">Daily Start Time:</label>
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-1">Daily End Time:</label>
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-1">
-              Break Duration (minutes):
-            </label>
-            <input
-              type="number"
-              value={breakDuration}
-              onChange={(e) => setBreakDuration(parseInt(e.target.value))}
-              className="w-full p-2 border rounded"
-              min="0"
-              max="60"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-1">
-              Study Session Duration (minutes):
-            </label>
-            <input
-              type="number"
-              value={sessionDuration}
-              onChange={(e) => setSessionDuration(parseInt(e.target.value))}
-              className="w-full p-2 border rounded"
-              min="15"
-              max="180"
-            />
-          </div>
-
-          <h3 className="text-lg font-semibold mb-2">Add Subjects</h3>
-          <div className="mb-4">
-            <label className="block font-medium mb-1">Subject Name:</label>
-            <input
-              type="text"
-              value={subjectName}
-              onChange={(e) => setSubjectName(e.target.value)}
-              className="w-full p-2 border rounded"
-              placeholder="e.g., Mathematics"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-1">Priority Level:</label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-
+          <h3 className="text-lg font-semibold mb-2">
+            Add Subjects on your class Schedule
+          </h3>
           <div className="mb-4">
             <label className="block font-medium mb-1">Study Days:</label>
             <div className="flex flex-wrap gap-2">
@@ -247,9 +230,34 @@ const TimetableGenerator = () => {
               ))}
             </div>
           </div>
+          <div className="mb-4">
+            <label className="block font-medium mb-1">Subject Name:</label>
+            <input
+              type="text"
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="e.g., Mathematics"
+            />
+          </div>
+
+          {/* <div className="mb-4">
+            <label className="block font-medium mb-1">Priority Level:</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full p-2 border rounded"
+            >
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div> */}
 
           <div className="mb-4">
-            <label className="block font-medium mb-1">Hours Per Week:</label>
+            <label className="block font-medium mb-1">
+              Credit Hours Per Week:
+            </label>
             <input
               type="number"
               value={weeklyHours}
@@ -257,6 +265,25 @@ const TimetableGenerator = () => {
               className="w-full p-2 border rounded"
               min="1"
               max="40"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block font-medium mb-1">Start Time:</label>
+            <input
+              type="time"
+              value={startTime}
+              onChange={handleStartTime}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block font-medium mb-1">End Time:</label>
+            <input
+              type="time"
+              value={endTime}
+              onChange={handleEndTime}
+              className="w-full p-2 border rounded"
             />
           </div>
 
@@ -275,10 +302,10 @@ const TimetableGenerator = () => {
                 style={{ borderColor: subject.color }}
               >
                 <div>
-                  <strong>{subject.name}</strong> ({subject.priority} priority)
+                  <strong>{subject.name}</strong> ({subject.weeklyHours} credit
+                  hours)
                   <br />
-                  {subject.weeklyHours} hours per week on{" "}
-                  {subject.days.join(", ")}
+                  {subject.duration} on {subject.days.join(", ")}
                 </div>
                 <button
                   onClick={() => removeSubject(index)}
