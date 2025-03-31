@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-export default function TimetablePDF({ data, name }) {
+export default function TimetablePDF({ data, name, darkMode }) {
   const [canDownload, setCanDownload] = useState(false);
   const tableRef = useRef(null);
 
@@ -23,27 +23,30 @@ export default function TimetablePDF({ data, name }) {
     }
 
     try {
-      // Create a clone with simplified styling
       const tableClone = tableRef.current.cloneNode(true);
 
-      // Apply PDF-safe styling directly
+      // Apply PDF-safe styling based on dark mode
       tableClone.style.width = "100%";
       tableClone.style.borderCollapse = "collapse";
+      tableClone.style.backgroundColor = darkMode ? "#1a202c" : "#ffffff";
+      tableClone.style.color = darkMode ? "#e2e8f0" : "#1a202c";
 
       // Style th elements
       const thElements = tableClone.querySelectorAll("th");
       thElements.forEach((th) => {
-        th.style.backgroundColor = "#f2f2f2";
-        th.style.border = "1px solid #ddd";
+        th.style.backgroundColor = darkMode ? "#2d3748" : "#f2f2f2";
+        th.style.border = darkMode ? "1px solid #4a5568" : "1px solid #ddd";
         th.style.padding = "12px";
         th.style.textAlign = "left";
+        th.style.color = darkMode ? "#e2e8f0" : "#1a202c";
       });
 
       // Style td elements
       const tdElements = tableClone.querySelectorAll("td");
       tdElements.forEach((td) => {
-        td.style.border = "1px solid #ddd";
+        td.style.border = darkMode ? "1px solid #4a5568" : "1px solid #ddd";
         td.style.padding = "8px";
+        td.style.color = darkMode ? "#e2e8f0" : "#1a202c";
       });
 
       document.body.appendChild(tableClone);
@@ -53,6 +56,7 @@ export default function TimetablePDF({ data, name }) {
         scale: 2,
         logging: false,
         useCORS: true,
+        backgroundColor: darkMode ? "#1a202c" : "#ffffff",
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -68,71 +72,90 @@ export default function TimetablePDF({ data, name }) {
     }
   };
 
+  // Dynamic styles based on dark mode
+  const styles = {
+    container: {
+      position: "relative",
+      width: "100%",
+      maxWidth: "800px",
+      margin: "2rem auto",
+      color: darkMode ? "#e2e8f0" : "#1a202c",
+    },
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+      marginBottom: "20px",
+      backgroundColor: darkMode ? "#1a202c" : "#ffffff",
+      color: darkMode ? "#e2e8f0" : "#1a202c",
+    },
+    headerCell: {
+      border: darkMode ? "1px solid #4a5568" : "1px solid #ddd",
+      padding: "12px",
+      textAlign: "left",
+      backgroundColor: darkMode ? "#2d3748" : "#f2f2f2",
+      color: darkMode ? "#e2e8f0" : "#1a202c",
+    },
+    cell: {
+      border: darkMode ? "1px solid #4a5568" : "1px solid #ddd",
+      padding: "8px",
+    },
+    overlay: {
+      position: "absolute",
+      inset: "0",
+      backdropFilter: "blur(4px)",
+      backgroundColor: darkMode
+        ? "rgba(26, 32, 44, 0.9)"
+        : "rgba(255,255,255,0.9)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "16px",
+      color: darkMode ? "#e2e8f0" : "#1a202c",
+    },
+    agreeButton: {
+      padding: "10px 20px",
+      backgroundColor: darkMode ? "#38a169" : "#4CAF50",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+    },
+    downloadButton: {
+      padding: "10px 20px",
+      marginTop: "20px",
+      borderRadius: "4px",
+      transition: "background-color 0.3s",
+      ...(canDownload
+        ? {
+            backgroundColor: darkMode ? "#3182ce" : "#2196F3",
+            color: "white",
+            cursor: "pointer",
+          }
+        : {
+            backgroundColor: darkMode ? "#4a5568" : "#e0e0e0",
+            color: darkMode ? "#a0aec0" : "#9e9e9e",
+            cursor: "not-allowed",
+          }),
+    },
+  };
+
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        maxWidth: "800px",
-        margin: "2rem auto",
-      }}
-    >
+    <div style={styles.container}>
       <div style={{ position: "relative" }}>
-        <table
-          ref={tableRef}
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginBottom: "20px",
-          }}
-        >
+        <table ref={tableRef} style={styles.table}>
           <thead>
             <tr>
-              <th
-                colSpan={4}
-                className="border border-gray-300 p-3 text-center mb-4"
-              >
+              <th colSpan={4} style={styles.headerCell}>
                 Personal Study Timetable for{" "}
-                <span className="font-semibold">{name || "Student"}</span>
+                <span style={{ fontWeight: "600" }}>{name || "Student"}</span>
               </th>
             </tr>
-            <tr style={{ backgroundColor: "#f2f2f2" }}>
-              <th
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "12px",
-                  textAlign: "left",
-                }}
-              >
-                Day
-              </th>
-              <th
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "12px",
-                  textAlign: "left",
-                }}
-              >
-                Time Slot
-              </th>
-              <th
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "12px",
-                  textAlign: "left",
-                }}
-              >
-                Course
-              </th>
-              <th
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "12px",
-                  textAlign: "left",
-                }}
-              >
-                Duration
-              </th>
+            <tr>
+              <th style={styles.headerCell}>Day</th>
+              <th style={styles.headerCell}>Time Slot</th>
+              <th style={styles.headerCell}>Course</th>
+              <th style={styles.headerCell}>Duration</th>
             </tr>
           </thead>
           <tbody>
@@ -144,23 +167,16 @@ export default function TimetablePDF({ data, name }) {
                       <td
                         rowSpan={sessions.length}
                         style={{
-                          border: "1px solid #ddd",
-                          padding: "8px",
+                          ...styles.cell,
                           fontWeight: "500",
                         }}
                       >
                         {day}
                       </td>
                     )}
-                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                      {session.timeSlot}
-                    </td>
-                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                      {session.course}
-                    </td>
-                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                      {session.time}
-                    </td>
+                    <td style={styles.cell}>{session.timeSlot}</td>
+                    <td style={styles.cell}>{session.course}</td>
+                    <td style={styles.cell}>{session.time}</td>
                   </tr>
                 ))}
               </React.Fragment>
@@ -169,32 +185,13 @@ export default function TimetablePDF({ data, name }) {
         </table>
 
         {!canDownload && (
-          <div
-            style={{
-              position: "absolute",
-              inset: "0",
-              backdropFilter: "blur(4px)",
-              backgroundColor: "rgba(255,255,255,0.7)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "16px",
-            }}
-          >
+          <div style={styles.overlay}>
             <p style={{ fontWeight: "bold", fontSize: "1.125rem" }}>
               Complete the requirements to download
             </p>
             <button
               onClick={() => setCanDownload(true)}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
+              style={styles.agreeButton}
             >
               I agree to terms
             </button>
@@ -205,23 +202,7 @@ export default function TimetablePDF({ data, name }) {
       <button
         onClick={handleDownload}
         disabled={!canDownload}
-        style={{
-          padding: "10px 20px",
-          marginTop: "20px",
-          borderRadius: "4px",
-          transition: "background-color 0.3s",
-          ...(canDownload
-            ? {
-                backgroundColor: "#2196F3",
-                color: "white",
-                cursor: "pointer",
-              }
-            : {
-                backgroundColor: "#e0e0e0",
-                color: "#9e9e9e",
-                cursor: "not-allowed",
-              }),
-        }}
+        style={styles.downloadButton}
       >
         Download Timetable (PDF)
       </button>
