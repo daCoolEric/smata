@@ -1,7 +1,5 @@
 "use client";
 import { useState, useRef } from "react";
-import html2canvas from "html2canvas";
-import { PDFDocument, rgb } from "pdf-lib";
 import { generateTimetable } from "./logic/generateTimetable";
 import TimetablePDF from "./components/TimetablePDF";
 
@@ -14,15 +12,16 @@ const TimetableGenerator = () => {
   const [subjectName, setSubjectName] = useState("");
   const [table, setTable] = useState([]);
   const [weeklyHours, setWeeklyHours] = useState(4);
-  const [days, setDays] = useState({
-    mon: true,
-    tue: true,
-    wed: true,
-    thu: true,
-    fri: true,
-    sat: false,
-    sun: false,
-  });
+  const [selectedDay, setSelectedDay] = useState("");
+  const dayLabels = {
+    mon: "Monday",
+    tue: "Tuesday",
+    wed: "Wednesday",
+    thu: "Thursday",
+    fri: "Friday",
+    sat: "Saturday",
+    sun: "Sunday",
+  };
   const [subjects, setSubjects] = useState([]);
 
   const colors = [
@@ -101,26 +100,24 @@ const TimetableGenerator = () => {
       return;
     }
 
-    const selectedDays = Object.keys(days)
-      .filter((day) => days[day])
-      .map((day) => day.charAt(0).toUpperCase() + day.slice(1));
-
-    if (selectedDays.length === 0) {
-      alert("Please select at least one day for study");
+    if (!selectedDay) {
+      // Changed from checking days object to selectedDay
+      alert("Please select a day for study");
       return;
     }
 
     const newSubject = {
       name: subjectName,
-      duration: `${startTimePeriod} - ${endTimePeriod} `,
+      duration: `${startTimePeriod} - ${endTimePeriod}`,
       weeklyHours,
-      days: selectedDays,
+      days: [selectedDay.charAt(0).toUpperCase() + selectedDay.slice(1)], // Convert to array with single day
       color: colors[subjects.length % colors.length],
     };
 
     setSubjects([...subjects, newSubject]);
     setSubjectName("");
     setWeeklyHours(4);
+    setSelectedDay(""); // Reset selection after adding
   };
 
   const removeSubject = (index) => {
@@ -238,19 +235,16 @@ const TimetableGenerator = () => {
           <div className="mb-4">
             <label className="block font-medium mb-1">Study Days:</label>
             <div className="flex flex-wrap gap-2">
-              {Object.keys(days).map((day) => (
+              {Object.keys(dayLabels).map((day) => (
                 <div key={day} className="flex items-center gap-1">
                   <input
-                    type="checkbox"
+                    type="radio"
                     id={`day-${day}`}
-                    checked={days[day]}
-                    onChange={(e) =>
-                      setDays({ ...days, [day]: e.target.checked })
-                    }
+                    name="day-selection"
+                    checked={selectedDay === day}
+                    onChange={() => setSelectedDay(day)}
                   />
-                  <label htmlFor={`day-${day}`}>
-                    {day.charAt(0).toUpperCase() + day.slice(1)}
-                  </label>
+                  <label htmlFor={`day-${day}`}>{dayLabels[day]}</label>
                 </div>
               ))}
             </div>
