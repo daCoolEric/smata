@@ -165,14 +165,13 @@ export function generateTimetable(courses, classSchedule) {
   for (const day of days) {
     const schedule = weeklySchedule[day];
 
-    // Allocate morning study time
-    const morningAllocation = allocateStudyTime(
-      schedule,
-      MORNING_STUDY_TIME,
-      true
-    );
+    // Modified: Only allocate morning study time if it's not Saturday or Sunday
+    const morningAllocation =
+      day === "Saturday" || day === "Sunday"
+        ? []
+        : allocateStudyTime(schedule, MORNING_STUDY_TIME, true);
 
-    // Allocate evening study time
+    // Always allocate evening study time
     const eveningAllocation = allocateStudyTime(
       schedule,
       EVENING_STUDY_TIME,
@@ -180,8 +179,10 @@ export function generateTimetable(courses, classSchedule) {
     );
 
     timetable[day] = {
-      morning: morningAllocation,
-      evening: eveningAllocation,
+      morning:
+        morningAllocation.length > 0 ? morningAllocation : "No study scheduled",
+      evening:
+        eveningAllocation.length > 0 ? eveningAllocation : "No study scheduled",
     };
   }
 
@@ -211,22 +212,24 @@ export function generateTimetable(courses, classSchedule) {
     const days = Object.keys(timetable);
 
     for (const day of days) {
-      // Process morning sessions
-      if (
-        timetable[day].morning &&
-        timetable[day].morning !== "No study scheduled"
-      ) {
-        timetable[day].morning.forEach((item) => {
-          result.push({
-            day,
-            timeSlot: "morning",
-            course: item.course,
-            time: item.time,
+      // Skip morning sessions for weekends
+      if (day !== "Saturday" && day !== "Sunday") {
+        if (
+          timetable[day].morning &&
+          timetable[day].morning !== "No study scheduled"
+        ) {
+          timetable[day].morning.forEach((item) => {
+            result.push({
+              day,
+              timeSlot: "morning",
+              course: item.course,
+              time: item.time,
+            });
           });
-        });
+        }
       }
 
-      // Process evening sessions
+      // Process evening sessions for all days
       if (
         timetable[day].evening &&
         timetable[day].evening !== "No study scheduled"
@@ -243,58 +246,6 @@ export function generateTimetable(courses, classSchedule) {
     }
 
     return result;
-  }
-
-  function createTimeTable(timetable) {
-    const sessions = [];
-
-    for (const [day, timeSlots] of Object.entries(timetable)) {
-      // Process morning sessions
-      if (timeSlots.morning && timeSlots.morning !== "No study scheduled") {
-        // First split by comma followed by space and capital letter (new course)
-        const morningSessions = timeSlots.morning.split(/, (?=[A-Z])/);
-
-        morningSessions.forEach((session) => {
-          // Find the last colon that precedes the time
-          const timeMatch = session.match(
-            /: ([\d\s\w]+(?: and [\d\s\w]+)? minutes?|[\d\s\w]+ hours?(?: and [\d\s\w]+ minutes?)?)$/
-          );
-          if (timeMatch) {
-            const time = timeMatch[0].substring(2); // Remove the ": "
-            const course = session.substring(0, timeMatch.index).trim();
-            sessions.push({
-              day,
-              timeSlot: "morning",
-              course,
-              time,
-            });
-          }
-        });
-      }
-
-      // Process evening sessions (same logic)
-      if (timeSlots.evening && timeSlots.evening !== "No study scheduled") {
-        const eveningSessions = timeSlots.evening.split(/, (?=[A-Z])/);
-
-        eveningSessions.forEach((session) => {
-          const timeMatch = session.match(
-            /: ([\d\s\w]+(?: and [\d\s\w]+)? minutes?|[\d\s\w]+ hours?(?: and [\d\s\w]+ minutes?)?)$/
-          );
-          if (timeMatch) {
-            const time = timeMatch[0].substring(2);
-            const course = session.substring(0, timeMatch.index).trim();
-            sessions.push({
-              day,
-              timeSlot: "evening",
-              course,
-              time,
-            });
-          }
-        });
-      }
-    }
-
-    return sessions;
   }
 
   return {
