@@ -2,6 +2,8 @@
 import { useState, useRef } from "react";
 import { generateTimetable } from "./logic/generateTimetable";
 import TimetablePDF from "./components/TimetablePDF";
+// import { classSchedule } from "./data/class_Schedule";
+// import { courses } from "./data/course_credits";
 
 const TimetableGenerator = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -209,6 +211,11 @@ const TimetableGenerator = () => {
     const timetable = generateTimetable(courseCredits, classSchedule);
     console.log("Generated Timetable:", timetable);
     setTable([...table, ...timetable.timetable]);
+
+    // To test the behaviour of the table
+    // const timetable = generateTimetable(courses, classSchedule);
+    // console.log("Generated Timetable:", timetable);
+    // setTable([...table, ...timetable.timetable]);
   };
 
   // Dark mode classes

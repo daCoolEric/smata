@@ -7,12 +7,15 @@ export default function TimetablePDF({ data, name, darkMode }) {
   const [canDownload, setCanDownload] = useState(false);
   const tableRef = useRef(null);
 
-  // Group data by day
+  // Group data by day and time slot
   const groupedData = data.reduce((acc, session) => {
     if (!acc[session.day]) {
-      acc[session.day] = [];
+      acc[session.day] = {};
     }
-    acc[session.day].push(session);
+    if (!acc[session.day][session.timeSlot]) {
+      acc[session.day][session.timeSlot] = [];
+    }
+    acc[session.day][session.timeSlot].push(session);
     return acc;
   }, {});
 
@@ -99,6 +102,10 @@ export default function TimetablePDF({ data, name, darkMode }) {
       border: darkMode ? "1px solid #4a5568" : "1px solid #ddd",
       padding: "8px",
     },
+    timeSlotCell: {
+      verticalAlign: "top",
+      fontWeight: "500",
+    },
     overlay: {
       position: "absolute",
       inset: "0",
@@ -159,28 +166,47 @@ export default function TimetablePDF({ data, name, darkMode }) {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(groupedData).map(([day, sessions]) => (
-              <React.Fragment key={day}>
-                {sessions.map((session, index) => (
-                  <tr key={`${day}-${index}`}>
-                    {index === 0 && (
-                      <td
-                        rowSpan={sessions.length}
-                        style={{
-                          ...styles.cell,
-                          fontWeight: "500",
-                        }}
-                      >
-                        {day}
-                      </td>
-                    )}
-                    <td style={styles.cell}>{session.timeSlot}</td>
-                    <td style={styles.cell}>{session.course}</td>
-                    <td style={styles.cell}>{session.time}</td>
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
+            {Object.entries(groupedData).map(([day, timeSlots]) => {
+              const timeSlotKeys = Object.keys(timeSlots);
+              const totalRows = timeSlotKeys.reduce(
+                (sum, slot) => sum + timeSlots[slot].length,
+                0
+              );
+
+              return (
+                <React.Fragment key={day}>
+                  {timeSlotKeys.map((timeSlot) => (
+                    <React.Fragment key={`${day}-${timeSlot}`}>
+                      {timeSlots[timeSlot].map((session, index) => (
+                        <tr key={`${day}-${timeSlot}-${index}`}>
+                          {index === 0 && timeSlot === timeSlotKeys[0] && (
+                            <td
+                              rowSpan={totalRows}
+                              style={{
+                                ...styles.cell,
+                                ...styles.timeSlotCell,
+                              }}
+                            >
+                              {day}
+                            </td>
+                          )}
+                          {index === 0 && (
+                            <td
+                              rowSpan={timeSlots[timeSlot].length}
+                              style={styles.cell}
+                            >
+                              {timeSlot}
+                            </td>
+                          )}
+                          <td style={styles.cell}>{session.course}</td>
+                          <td style={styles.cell}>{session.time}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
 
