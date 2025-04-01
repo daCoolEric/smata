@@ -94,7 +94,7 @@ export default function TimetablePDF({ data, name, darkMode }) {
     headerCell: {
       border: darkMode ? "1px solid #4a5568" : "1px solid #ddd",
       padding: "12px",
-      textAlign: "left",
+      textAlign: "center",
       backgroundColor: darkMode ? "#2d3748" : "#f2f2f2",
       color: darkMode ? "#e2e8f0" : "#1a202c",
     },
@@ -207,6 +207,21 @@ export default function TimetablePDF({ data, name, darkMode }) {
                 </React.Fragment>
               );
             })}
+
+            <tr>
+              <th
+                colSpan={4}
+                style={{
+                  ...styles.cell,
+                  textAlign: "center",
+                  fontSize: "0.8rem",
+                  padding: "12px",
+                  borderTop: darkMode ? "2px solid #4a5568" : "2px solid #ddd",
+                }}
+              >
+                © {new Date().getFullYear()} Grinbox™ - All Rights Reserved
+              </th>
+            </tr>
           </tbody>
         </table>
 
