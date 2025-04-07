@@ -1,11 +1,54 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
 export default function TimetablePDF({ data, name, darkMode }) {
   const [canDownload, setCanDownload] = useState(false);
+  const [showAd, setShowAd] = useState(false);
+  const [showTable, setShowTable] = useState(false);
+  const [showGenerateButton, setShowGenerateButton] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [adCountdown, setAdCountdown] = useState(15); // 15-second ad
+  const [adWatched, setAdWatched] = useState(false);
   const tableRef = useRef(null);
+
+  // Generation progress timer
+  useEffect(() => {
+    let timer;
+    if (generationProgress < 100) {
+      timer = setTimeout(() => {
+        setGenerationProgress(generationProgress + 100 / 15); // Complete in 15 seconds
+      }, 1000);
+    } else {
+      setShowGenerateButton(true);
+    }
+    return () => clearTimeout(timer);
+  }, [generationProgress]);
+
+  // const progressTimer = () => {
+  //   let timer;
+  //   if (generationProgress < 100) {
+  //     timer = setTimeout(() => {
+  //       setGenerationProgress(generationProgress + 100 / 15); // Complete in 15 seconds
+  //     }, 1000);
+  //   } else {
+  //     setShowGenerateButton(true);
+  //   }
+  //   return () => clearTimeout(timer);
+  // }
+  // Countdown timer for the ad
+  useEffect(() => {
+    let timer;
+    if (showAd && adCountdown > 0) {
+      timer = setTimeout(() => {
+        setAdCountdown(adCountdown - 1);
+      }, 1000);
+    } else if (showAd && adCountdown === 0) {
+      setAdWatched(true);
+    }
+    return () => clearTimeout(timer);
+  }, [showAd, adCountdown]);
 
   // Group data by day and time slot
   const groupedData = data.reduce((acc, session) => {
@@ -19,9 +62,14 @@ export default function TimetablePDF({ data, name, darkMode }) {
     return acc;
   }, {});
 
+  const handleGenerateTable = () => {
+    setShowAd(true);
+    setCanDownload(true); // Automatically enable download after ad is watched
+  };
+
   const handleDownload = async () => {
     if (!canDownload) {
-      alert("Please agree to terms first");
+      alert("Please watch the ad to access the timetable");
       return;
     }
 
@@ -75,6 +123,15 @@ export default function TimetablePDF({ data, name, darkMode }) {
     }
   };
 
+  const handleSkipAd = () => {
+    alert("You must watch the full ad to access the timetable");
+  };
+
+  const handleContinueAfterAd = () => {
+    setShowAd(false);
+    setShowTable(true);
+  };
+
   // Dynamic styles based on dark mode
   const styles = {
     container: {
@@ -83,6 +140,42 @@ export default function TimetablePDF({ data, name, darkMode }) {
       maxWidth: "800px",
       margin: "2rem auto",
       color: darkMode ? "#e2e8f0" : "#1a202c",
+    },
+    progressContainer: {
+      textAlign: "center",
+      margin: "40px 0",
+    },
+    progressBar: {
+      width: "100%",
+      height: "20px",
+      backgroundColor: darkMode ? "#2d3748" : "#e2e8f0",
+      borderRadius: "10px",
+      margin: "20px 0",
+      overflow: "hidden",
+    },
+    progressFill: {
+      height: "100%",
+      backgroundColor: darkMode ? "#38a169" : "#4CAF50",
+      width: `${generationProgress}%`,
+      transition: "width 1s linear",
+    },
+    generateButton: {
+      padding: "12px 24px",
+      backgroundColor: darkMode ? "#3182ce" : "#2196F3",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+      fontSize: "1rem",
+      fontWeight: "bold",
+      margin: "20px auto",
+      display: "block",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      transition: "all 0.3s ease",
+      ":hover": {
+        transform: "translateY(-2px)",
+        boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
+      },
     },
     table: {
       width: "100%",
@@ -106,147 +199,228 @@ export default function TimetablePDF({ data, name, darkMode }) {
       verticalAlign: "top",
       fontWeight: "500",
     },
-    overlay: {
-      position: "absolute",
-      inset: "0",
-      backdropFilter: "blur(4px)",
-      backgroundColor: darkMode
-        ? "rgba(26, 32, 44, 0.9)"
-        : "rgba(255,255,255,0.9)",
+    adContainer: {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100%",
+      backgroundColor: darkMode ? "#1a202c" : "#ffffff",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      gap: "16px",
-      color: darkMode ? "#e2e8f0" : "#1a202c",
+      zIndex: "1000",
+      padding: "20px",
+      textAlign: "center",
     },
-    agreeButton: {
+    adContent: {
+      maxWidth: "600px",
+      margin: "0 auto",
+      padding: "20px",
+      border: darkMode ? "1px solid #4a5568" : "1px solid #ddd",
+      borderRadius: "8px",
+      backgroundColor: darkMode ? "#2d3748" : "#f8f8f8",
+    },
+    countdown: {
+      fontSize: "1.5rem",
+      fontWeight: "bold",
+      color: darkMode ? "#38a169" : "#4CAF50",
+      margin: "20px 0",
+    },
+    adButton: {
       padding: "10px 20px",
-      backgroundColor: darkMode ? "#38a169" : "#4CAF50",
-      color: "white",
-      border: "none",
+      margin: "10px",
       borderRadius: "4px",
       cursor: "pointer",
+      border: "none",
+      fontWeight: "bold",
     },
     downloadButton: {
-      padding: "10px 20px",
+      padding: "12px 24px",
       marginTop: "20px",
       borderRadius: "4px",
-      transition: "background-color 0.3s",
-      ...(canDownload
-        ? {
-            backgroundColor: darkMode ? "#3182ce" : "#2196F3",
-            color: "white",
-            cursor: "pointer",
-          }
-        : {
-            backgroundColor: darkMode ? "#4a5568" : "#e0e0e0",
-            color: darkMode ? "#a0aec0" : "#9e9e9e",
-            cursor: "not-allowed",
-          }),
+      backgroundColor: darkMode ? "#3182ce" : "#2196F3",
+      color: "white",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "1rem",
+      fontWeight: "bold",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      transition: "all 0.3s ease",
+      ":hover": {
+        transform: "translateY(-2px)",
+        boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
+      },
     },
   };
 
   return (
     <div style={styles.container}>
-      <div style={{ position: "relative" }}>
-        <table ref={tableRef} style={styles.table}>
-          <thead>
-            <tr>
-              <th colSpan={4} style={styles.headerCell}>
-                Personal Study Timetable for{" "}
-                <span style={{ fontWeight: "600" }}>{name || "Student"}</span>
-              </th>
-            </tr>
-            <tr>
-              <th style={styles.headerCell}>Day</th>
-              <th style={styles.headerCell}>Time Slot</th>
-              <th style={styles.headerCell}>Course</th>
-              <th style={styles.headerCell}>Duration</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(groupedData).map(([day, timeSlots]) => {
-              const timeSlotKeys = Object.keys(timeSlots);
-              const totalRows = timeSlotKeys.reduce(
-                (sum, slot) => sum + timeSlots[slot].length,
-                0
-              );
+      {/* Study plan generation progress */}
+      {!showGenerateButton && !showAd && !showTable && (
+        <div style={styles.progressContainer}>
+          <h2>Generating Your Personalized Study Plan</h2>
+          <p>Analyzing your courses and optimizing your schedule...</p>
+          <div style={styles.progressBar}>
+            <div style={styles.progressFill}></div>
+          </div>
+          <p>{Math.min(100, Math.round(generationProgress))}% Complete</p>
+        </div>
+      )}
 
-              return (
-                <React.Fragment key={day}>
-                  {timeSlotKeys.map((timeSlot) => (
-                    <React.Fragment key={`${day}-${timeSlot}`}>
-                      {timeSlots[timeSlot].map((session, index) => (
-                        <tr key={`${day}-${timeSlot}-${index}`}>
-                          {index === 0 && timeSlot === timeSlotKeys[0] && (
-                            <td
-                              rowSpan={totalRows}
-                              style={{
-                                ...styles.cell,
-                                ...styles.timeSlotCell,
-                              }}
-                            >
-                              {day}
-                            </td>
-                          )}
-                          {index === 0 && (
-                            <td
-                              rowSpan={timeSlots[timeSlot].length}
-                              style={styles.cell}
-                            >
-                              {timeSlot}
-                            </td>
-                          )}
-                          <td style={styles.cell}>{session.course}</td>
-                          <td style={styles.cell}>{session.time}</td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </React.Fragment>
-              );
-            })}
+      {/* Generate button - appears after generation completes */}
+      {showGenerateButton && !showAd && !showTable && (
+        <button onClick={handleGenerateTable} style={styles.generateButton}>
+          Generate Timetable (Watch Ad to Continue)
+        </button>
+      )}
 
-            <tr>
-              <th
-                colSpan={4}
+      {/* Ad overlay - appears after generate button is clicked */}
+      {showAd && (
+        <div style={styles.adContainer}>
+          <div style={styles.adContent}>
+            <h2>Advertisement</h2>
+            <p>Please watch this short ad to view your timetable</p>
+
+            {/* Simulated ad content */}
+            <div
+              style={{
+                width: "100%",
+                height: "300px",
+                backgroundColor: "#333",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "20px 0",
+                borderRadius: "4px",
+              }}
+            >
+              <p>Sponsored Content ({adCountdown}s remaining)</p>
+            </div>
+
+            <div style={styles.countdown}>
+              {adCountdown > 0
+                ? `${adCountdown} seconds remaining`
+                : "Ad complete!"}
+            </div>
+
+            {adWatched ? (
+              <button
+                onClick={handleContinueAfterAd}
                 style={{
-                  ...styles.cell,
-                  textAlign: "center",
-                  fontSize: "0.8rem",
-                  padding: "12px",
-                  borderTop: darkMode ? "2px solid #4a5568" : "2px solid #ddd",
+                  ...styles.adButton,
+                  backgroundColor: darkMode ? "#38a169" : "#4CAF50",
+                  color: "white",
                 }}
               >
-                © {new Date().getFullYear()} Grinbox™ - All Rights Reserved
-              </th>
-            </tr>
-          </tbody>
-        </table>
-
-        {!canDownload && (
-          <div style={styles.overlay}>
-            <p style={{ fontWeight: "bold", fontSize: "1.125rem" }}>
-              Complete the requirements to download
-            </p>
-            <button
-              onClick={() => setCanDownload(true)}
-              style={styles.agreeButton}
-            >
-              I agree to terms
-            </button>
+                View Timetable
+              </button>
+            ) : (
+              <button
+                onClick={handleSkipAd}
+                style={{
+                  ...styles.adButton,
+                  backgroundColor: darkMode ? "#e53e3e" : "#f44336",
+                  color: "white",
+                }}
+              >
+                Skip Ad (Not Allowed)
+              </button>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <button
-        onClick={handleDownload}
-        disabled={!canDownload}
-        style={styles.downloadButton}
-      >
-        Download Timetable (PDF)
-      </button>
+      {/* Table content - shown after ad is watched */}
+      {showTable && (
+        <div style={{ position: "relative" }}>
+          <table ref={tableRef} style={styles.table}>
+            <thead>
+              <tr>
+                <th colSpan={4} style={styles.headerCell}>
+                  Personal Study Timetable for{" "}
+                  <span style={{ fontWeight: "600" }}>{name || "Student"}</span>
+                </th>
+              </tr>
+              <tr>
+                <th style={styles.headerCell}>Day</th>
+                <th style={styles.headerCell}>Time Slot</th>
+                <th style={styles.headerCell}>Course</th>
+                <th style={styles.headerCell}>Duration</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(groupedData).map(([day, timeSlots]) => {
+                const timeSlotKeys = Object.keys(timeSlots);
+                const totalRows = timeSlotKeys.reduce(
+                  (sum, slot) => sum + timeSlots[slot].length,
+                  0
+                );
+
+                return (
+                  <React.Fragment key={day}>
+                    {timeSlotKeys.map((timeSlot) => (
+                      <React.Fragment key={`${day}-${timeSlot}`}>
+                        {timeSlots[timeSlot].map((session, index) => (
+                          <tr key={`${day}-${timeSlot}-${index}`}>
+                            {index === 0 && timeSlot === timeSlotKeys[0] && (
+                              <td
+                                rowSpan={totalRows}
+                                style={{
+                                  ...styles.cell,
+                                  ...styles.timeSlotCell,
+                                }}
+                              >
+                                {day}
+                              </td>
+                            )}
+                            {index === 0 && (
+                              <td
+                                rowSpan={timeSlots[timeSlot].length}
+                                style={styles.cell}
+                              >
+                                {timeSlot}
+                              </td>
+                            )}
+                            <td style={styles.cell}>{session.course}</td>
+                            <td style={styles.cell}>{session.time}</td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
+
+              <tr>
+                <th
+                  colSpan={4}
+                  style={{
+                    ...styles.cell,
+                    textAlign: "center",
+                    fontSize: "0.8rem",
+                    padding: "12px",
+                    borderTop: darkMode
+                      ? "2px solid #4a5568"
+                      : "2px solid #ddd",
+                  }}
+                >
+                  © {new Date().getFullYear()} Grinbox™ - All Rights Reserved
+                </th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Download button - shown only when table is visible */}
+      {showTable && (
+        <button onClick={handleDownload} style={styles.downloadButton}>
+          Download Timetable (PDF)
+        </button>
+      )}
     </div>
   );
 }

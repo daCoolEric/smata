@@ -16,6 +16,7 @@ const TimetableGenerator = () => {
   const [table, setTable] = useState([]);
   const [weeklyHours, setWeeklyHours] = useState(4);
   const [selectedDay, setSelectedDay] = useState("");
+  const [generate, setGenerate] = useState(false);
   const dayLabels = {
     mon: "Monday",
     tue: "Tuesday",
@@ -200,22 +201,28 @@ const TimetableGenerator = () => {
       .padStart(2, "0")}`;
   }
 
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationComplete, setGenerationComplete] = useState(false);
   const handleGenerateTimetable = () => {
+    if (isGenerating) return; // Prevent multiple clicks
+    setIsGenerating(true);
+    setGenerationComplete(false);
+
+    // Your existing generation logic
     const inputCourses = subjects;
     const { classSchedule, courseCredits } =
       convertToClassSchedule(inputCourses);
-
-    console.log("Class Schedule:", classSchedule);
-    console.log("Course Credits:", courseCredits);
+    setGenerate(true);
 
     const timetable = generateTimetable(courseCredits, classSchedule);
-    console.log("Generated Timetable:", timetable);
     setTable([...table, ...timetable.timetable]);
+    console.log(timetable);
 
-    // To test the behaviour of the table
-    // const timetable = generateTimetable(courses, classSchedule);
-    // console.log("Generated Timetable:", timetable);
-    // setTable([...table, ...timetable.timetable]);
+    // Set timeout to reset after 15 seconds
+    setTimeout(() => {
+      setIsGenerating(false);
+      setGenerationComplete(true);
+    }, 15000);
   };
 
   // Dark mode classes
@@ -276,7 +283,7 @@ const TimetableGenerator = () => {
               Add Subjects on your class Schedule
             </h3>
             <div className="mb-4">
-              <label className="block font-medium mb-1">Study Days:</label>
+              <label className="block font-medium mb-1">Class Days:</label>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(dayLabels).map((day) => (
                   <div key={day} className="flex items-center gap-1">
@@ -369,17 +376,32 @@ const TimetableGenerator = () => {
 
             <button
               onClick={handleGenerateTimetable}
-              className={`text-white px-4 py-2 rounded ${buttonSuccess} mt-4`}
+              disabled={subjects.length === 0 || isGenerating}
+              className={`text-white px-4 py-2 rounded mt-4 ${
+                subjects.length === 0 || isGenerating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : buttonSuccess
+              }`}
             >
-              Generate Timetable
+              {generationComplete
+                ? "Generate Timetable"
+                : isGenerating
+                ? "Generating..."
+                : "Generate Timetable"}
             </button>
           </div>
 
           <div
             className={`flex-2 min-w-[500px] ${cardBg} p-6 rounded-lg shadow-md ${borderColor} border`}
           >
-            <h2 className="text-xl font-semibold mb-4">Your Study Timetable</h2>
-            <TimetablePDF data={table} name={name} darkMode={darkMode} />
+            {generate ? (
+              <>
+                <h2 className="text-xl font-semibold mb-4">
+                  Your Study Timetable
+                </h2>
+                <TimetablePDF data={table} name={name} darkMode={darkMode} />
+              </>
+            ) : null}
           </div>
         </div>
       </div>
