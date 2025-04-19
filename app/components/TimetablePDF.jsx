@@ -13,12 +13,46 @@ export default function TimetablePDF({ data, name, darkMode }) {
   const [adWatched, setAdWatched] = useState(false);
   const tableRef = useRef(null);
 
+  // Load AdSense script when component mounts
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src =
+      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6588662658617593";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  // Initialize ads when ad container is shown
+  useEffect(() => {
+    if (showAd) {
+      const timer = setTimeout(() => {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (e) {
+          console.error("AdSense error:", e);
+          // Fallback to simulated ad if AdSense fails
+          const simulatedAd = document.getElementById("simulated-ad");
+          if (simulatedAd) {
+            simulatedAd.innerHTML = "<p>Advertisement Content</p>";
+          }
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showAd]);
+
   // Generation progress timer
   useEffect(() => {
     let timer;
     if (generationProgress < 100) {
       timer = setTimeout(() => {
-        setGenerationProgress(generationProgress + 100 / 15); // Complete in 15 seconds
+        setGenerationProgress(generationProgress + 100 / 15);
       }, 1000);
     } else {
       setShowGenerateButton(true);
@@ -26,17 +60,6 @@ export default function TimetablePDF({ data, name, darkMode }) {
     return () => clearTimeout(timer);
   }, [generationProgress]);
 
-  // const progressTimer = () => {
-  //   let timer;
-  //   if (generationProgress < 100) {
-  //     timer = setTimeout(() => {
-  //       setGenerationProgress(generationProgress + 100 / 15); // Complete in 15 seconds
-  //     }, 1000);
-  //   } else {
-  //     setShowGenerateButton(true);
-  //   }
-  //   return () => clearTimeout(timer);
-  // }
   // Countdown timer for the ad
   useEffect(() => {
     let timer;
@@ -64,7 +87,7 @@ export default function TimetablePDF({ data, name, darkMode }) {
 
   const handleGenerateTable = () => {
     setShowAd(true);
-    setCanDownload(true); // Automatically enable download after ad is watched
+    setCanDownload(true);
   };
 
   const handleDownload = async () => {
@@ -76,7 +99,7 @@ export default function TimetablePDF({ data, name, darkMode }) {
     try {
       const tableClone = tableRef.current.cloneNode(true);
 
-      // Apply PDF-safe styling based on dark mode
+      // Apply PDF-safe styling
       tableClone.style.width = "100%";
       tableClone.style.borderCollapse = "collapse";
       tableClone.style.backgroundColor = darkMode ? "#1a202c" : "#ffffff";
@@ -253,6 +276,17 @@ export default function TimetablePDF({ data, name, darkMode }) {
         boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
       },
     },
+    adWrapper: {
+      width: "100%",
+      minHeight: "250px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      margin: "20px 0",
+      backgroundColor: darkMode ? "#2d3748" : "#f0f0f0",
+      borderRadius: "4px",
+      overflow: "hidden",
+    },
   };
 
   return (
@@ -283,14 +317,27 @@ export default function TimetablePDF({ data, name, darkMode }) {
             <h2>Advertisement</h2>
             <p>Please watch this short ad to view your timetable</p>
 
-            {/* Simulated ad content */}
+            {/* Google AdSense Ad Unit */}
+            <div style={styles.adWrapper}>
+              <ins
+                className="adsbygoogle"
+                style={{ display: "block", width: "100%", height: "250px" }}
+                data-ad-client="ca-pub-6588662658617593"
+                data-ad-slot="5915535026" // Replace with your actual ad slot ID
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              ></ins>
+            </div>
+
+            {/* Fallback simulated ad (shows if AdSense fails) */}
             <div
+              id="simulated-ad"
               style={{
                 width: "100%",
-                height: "300px",
-                backgroundColor: "#333",
-                color: "white",
-                display: "flex",
+                height: "250px",
+                backgroundColor: darkMode ? "#4a5568" : "#e0e0e0",
+                color: darkMode ? "#e2e8f0" : "#333",
+                display: "none", // Hidden by default
                 alignItems: "center",
                 justifyContent: "center",
                 margin: "20px 0",
