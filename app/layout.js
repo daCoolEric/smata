@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Suspense } from "react";
 import Loading from "./Loading";
+import AppFooter from "./components/AppFooter";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +86,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           {" "}
           <Suspense fallback={<Loading />}>{children} </Suspense>
+          <AppFooter />
         </AuthProvider>
       </body>
     </html>
