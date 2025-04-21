@@ -7,8 +7,11 @@ import {
   BookOpen,
   Plus,
   BrainCircuit,
+  Brain,
+  Moon,
   LogOut,
   ChevronRight,
+  BatteryCharging,
   Zap,
   Heart,
   Coins,
@@ -291,43 +294,82 @@ export default function Dashboard() {
             <p className="text-gray-500 mb-4">
               {completedSessions >= 3
                 ? "🔥 You've completed your daily goal! +25 coins"
-                : `Complete ${
-                    3 - completedSessions
-                  } more sessions to earn bonus coins`}
+                : `Complete ${3 - completedSessions} tasks to earn bonus coins`}
             </p>
+          </div>
 
-            <div className="flex gap-2">
+          {/* Energize Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100/50 dark:border-gray-700/30 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                  <BatteryCharging className="w-5 h-5 text-orange-500 dark:text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                    Energize
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Energy management
+                  </p>
+                </div>
+              </div>
+              <div className="font-medium bg-red-100 text-red-600 px-2 py-1 rounded-md text-sm">
+                {health}/100
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-4 text-center transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700/60">
+              <p className="text-gray-500 dark:text-gray-300 mb-3">
+                Energy level running down
+              </p>
               <button
-                onClick={() => setCoins((prev) => prev + 10)}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors flex items-center gap-1"
+                onClick={() => setCoins((prev) => prev + 5)}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600w-full text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
-                <Plus className="w-4 h-4" />
-                Add Task (+10 coins)
-              </button>
-              <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                View Calendar
+                <Zap className="w-4 h-4" />
+                <span>Refill (+5 coins)</span>
+                <span className="ml-auto bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                  Boost
+                </span>
               </button>
             </div>
           </div>
 
-          {/* Calendar Section */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition-shadow duration-300">
+          {/* Focus Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100/50 dark:border-gray-700/30 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
             <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="text-purple-600" />
-                <h3 className="font-semibold text-lg">Calendar</h3>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-teal-100 dark:bg-teal-900/20 rounded-lg">
+                  <Brain className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                    Focus
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Mindfulness & Meditation
+                  </p>
+                </div>
               </div>
-              <button className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                View All <ChevronRight className="w-4 h-4" />
-              </button>
+              <div className="font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md text-sm">
+                {focus}/100
+              </div>
             </div>
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
-              <p className="text-gray-500">No upcoming events</p>
+
+            <div className="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-4 text-center transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700/60">
+              <p className="text-gray-500 dark:text-gray-300 mb-3">
+                Your focus needs replenishing
+              </p>
               <button
                 onClick={() => setCoins((prev) => prev + 5)}
-                className="mt-2 text-sm text-purple-600 hover:text-purple-700 flex items-center justify-center gap-1"
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-400 to-teal-500 hover:from-blue-500 hover:to-teal-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
-                <Plus className="w-4 h-4" /> Add Event (+5 coins)
+                <Moon className="w-4 h-4" />
+                <span>Meditate (+5 focus)</span>
+                <span className="ml-auto bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                  Calm
+                </span>
               </button>
             </div>
           </div>
