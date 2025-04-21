@@ -12,6 +12,7 @@ import {
   LogOut,
   ChevronRight,
   BatteryCharging,
+  Bookmark,
   Zap,
   Heart,
   Coins,
@@ -328,7 +329,7 @@ export default function Dashboard() {
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600w-full text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <Zap className="w-4 h-4" />
-                <span>Refill (+5 coins)</span>
+                <span>Refill (+1 coins)</span>
                 <span className="ml-auto bg-white/20 px-1.5 py-0.5 rounded text-xs">
                   Boost
                 </span>
@@ -366,7 +367,7 @@ export default function Dashboard() {
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-400 to-teal-500 hover:from-blue-500 hover:to-teal-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <Moon className="w-4 h-4" />
-                <span>Meditate (+5 focus)</span>
+                <span>Meditate (+1 focus )</span>
                 <span className="ml-auto bg-white/20 px-1.5 py-0.5 rounded text-xs">
                   Calm
                 </span>
@@ -374,6 +375,43 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Study Session Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100/50 dark:border-gray-700/30 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">
+                  <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                    Study Session
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Knowledge & Concentration
+                  </p>
+                </div>
+              </div>
+              <div className="font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-md text-sm">
+                65/100
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-700/40 rounded-xl p-4 text-center transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700/60">
+              <p className="text-gray-500 dark:text-gray-300 mb-3">
+                Ready for a productive session?
+              </p>
+              <button
+                onClick={() => setCoins((prev) => prev + 5)}
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <Bookmark className="w-4 h-4" />
+                <span>Start Studying (+5 XP)</span>
+                <span className="ml-auto bg-white/20 px-1.5 py-0.5 rounded text-xs">
+                  Focus
+                </span>
+              </button>
+            </div>
+          </div>
           {/* Activities */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition-shadow duration-300">
             <div className="flex justify-between items-center mb-4">
