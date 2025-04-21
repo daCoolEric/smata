@@ -353,7 +353,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md text-sm">
-                {focus}/100
+                40/100
               </div>
             </div>
 
