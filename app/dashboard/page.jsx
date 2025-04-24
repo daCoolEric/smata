@@ -325,7 +325,8 @@ export default function Dashboard() {
                 Energy level running down
               </p>
               <button
-                onClick={() => setCoins((prev) => prev + 5)}
+                // onClick={() => setCoins((prev) => prev + 5)}
+                onClick={() => router.push("/energize")}
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600w-full text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <Zap className="w-4 h-4" />
@@ -363,7 +364,8 @@ export default function Dashboard() {
                 Your focus needs replenishing
               </p>
               <button
-                onClick={() => setCoins((prev) => prev + 5)}
+                // onClick={() => setCoins((prev) => prev + 5)}
+                onClick={() => router.push("/focus")}
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-400 to-teal-500 hover:from-blue-500 hover:to-teal-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <Moon className="w-4 h-4" />
@@ -401,7 +403,8 @@ export default function Dashboard() {
                 Ready for a productive session?
               </p>
               <button
-                onClick={() => setCoins((prev) => prev + 5)}
+                // onClick={() => setCoins((prev) => prev + 5)}
+                onClick={() => router.push("/study-plan")}
                 className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <Bookmark className="w-4 h-4" />
