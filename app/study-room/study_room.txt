@@ -1,0 +1,834 @@
+"use client";
+import { useState, useEffect, useRef, useCallback } from "react";
+import FileUploader from "../components/studySession/FileUploader";
+import DocumentViewer from "../components/studySession/DocumentViewer";
+import { generateAISummary } from "../logic/generateAISummary";
+
+const StudySection = () => {
+  // State declarations
+  const [file, setFile] = useState(null);
+  const [fileContent, setFileContent] = useState(null);
+  const [selectedText, setSelectedText] = useState("");
+  const [activeStep, setActiveStep] = useState(0);
+  const [studyGoal, setStudyGoal] = useState("");
+  const [studyDuration, setStudyDuration] = useState(25);
+  const [breakDuration, setBreakDuration] = useState(5);
+  const [isActive, setIsActive] = useState(false);
+  const [isStudyTime, setIsStudyTime] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [cyclesCompleted, setCyclesCompleted] = useState(0);
+  const [studyNote, setStudyNote] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [assessmentScore, setAssessmentScore] = useState(null);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [aiResponse, setAiResponse] = useState(null);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+
+  // Calculate cycles
+  const calculateTotalCycles = useCallback((duration) => {
+    const baseCycles = Math.floor(duration / 25);
+    const remainder = duration % 25;
+    return {
+      fullCycles: baseCycles,
+      partialCycle: remainder > 0 ? remainder / 25 : 0,
+      totalDuration: duration,
+    };
+  }, []);
+
+  const [cycleInfo, setCycleInfo] = useState({
+    fullCycles: 0,
+    partialCycle: 0,
+    totalDuration: 25,
+  });
+
+  const totalCycles =
+    cycleInfo.fullCycles + (cycleInfo.partialCycle > 0 ? 1 : 0);
+
+  // Initialize after mount
+  useEffect(() => {
+    const cycles = calculateTotalCycles(studyDuration);
+    setCycleInfo(cycles);
+    setTimeLeft(studyDuration * 60);
+    setSessionCompleted(false);
+  }, [studyDuration, calculateTotalCycles]);
+
+  // Timer logic
+  useEffect(() => {
+    let interval = null;
+
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (isActive && timeLeft === 0) {
+      if (isStudyTime) {
+        const newCyclesCompleted = cyclesCompleted + 1;
+        setCyclesCompleted(newCyclesCompleted);
+
+        // Check if all study sessions are completed
+        if (newCyclesCompleted >= totalCycles) {
+          setIsActive(false);
+          setSessionCompleted(true);
+          return;
+        }
+      }
+
+      // Only switch to break if study duration is more than 25 minutes
+      if (studyDuration > 25) {
+        setIsStudyTime((prev) => !prev);
+        setTimeLeft(isStudyTime ? breakDuration * 60 : studyDuration * 60);
+      } else {
+        // For single 25-minute session, just reset study time
+        setTimeLeft(studyDuration * 60);
+      }
+    }
+
+    return () => clearInterval(interval);
+  }, [
+    isActive,
+    timeLeft,
+    isStudyTime,
+    studyDuration,
+    breakDuration,
+    cyclesCompleted,
+    totalCycles,
+  ]);
+
+  // Progress calculation
+  useEffect(() => {
+    if (isActive) {
+      const totalTime = isStudyTime ? studyDuration * 60 : breakDuration * 60;
+      const elapsed = totalTime - timeLeft;
+      const segmentProgress = elapsed / totalTime;
+      const cycleProgress = cyclesCompleted / totalCycles;
+      const currentSegmentProgress = (1 / totalCycles) * segmentProgress;
+      setProgress(cycleProgress + currentSegmentProgress);
+    }
+  }, [
+    timeLeft,
+    cyclesCompleted,
+    isStudyTime,
+    studyDuration,
+    breakDuration,
+    isActive,
+    totalCycles,
+  ]);
+
+  // Render cycle segments
+  const renderCycleSegments = () => {
+    if (typeof window === "undefined") return null;
+
+    const segments = [];
+    for (let i = 0; i < cycleInfo.fullCycles; i++) {
+      segments.push(
+        <div
+          key={`full-${i}`}
+          className={`h-1 flex-1 mx-1 rounded-sm ${
+            i < cyclesCompleted
+              ? "bg-blue-500"
+              : i === cyclesCompleted && isActive
+              ? isStudyTime
+                ? "bg-blue-300"
+                : "bg-green-300"
+              : "bg-gray-200"
+          }`}
+        />
+      );
+    }
+
+    if (cycleInfo.partialCycle > 0) {
+      segments.push(
+        <div
+          key="partial"
+          className="h-1 mx-1 rounded-sm relative overflow-hidden"
+          style={{ flex: cycleInfo.partialCycle }}
+        >
+          <div className="absolute inset-0 bg-gray-200" />
+          <div
+            className={`absolute inset-0 ${
+              cyclesCompleted >= cycleInfo.fullCycles && isActive
+                ? isStudyTime
+                  ? "bg-blue-300"
+                  : "bg-green-300"
+                : cyclesCompleted > cycleInfo.fullCycles
+                ? "bg-blue-500"
+                : "bg-gray-200"
+            }`}
+            style={{
+              width: `${
+                cyclesCompleted >= cycleInfo.fullCycles ? progress * 100 : 0
+              }%`,
+            }}
+          />
+        </div>
+      );
+    }
+
+    return segments;
+  };
+
+  // Timer controls
+  const toggleTimer = () => {
+    setIsActive(!isActive);
+  };
+
+  const resetTimer = () => {
+    setIsActive(false);
+    setIsStudyTime(true);
+    setTimeLeft(studyDuration * 60);
+    setCyclesCompleted(0);
+    setProgress(0);
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  // Handlers
+  const handleFileUpload = (uploadedFile, content) => {
+    setFile(uploadedFile);
+    setFileContent(content);
+    setSelectedText("");
+  };
+
+  const handleTextSelected = (text) => {
+    setSelectedText(text);
+    setStudyGoal(text);
+    setStudyNote(text);
+  };
+
+  const handleNext = () => {
+    if (activeStep < 3) setActiveStep(activeStep + 1);
+  };
+
+  const handleBack = () => {
+    if (activeStep > 0) setActiveStep(activeStep - 1);
+  };
+
+  const handleStartLearning = () => {
+    handleNext();
+    setIsActive(true);
+  };
+
+  const handleAssessmentSubmit = (score) => {
+    setAssessmentScore(score);
+  };
+
+  const handleStudyDurationChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setStudyDuration(value);
+      if (!isActive && isStudyTime) {
+        setTimeLeft(value * 60);
+      }
+    }
+  };
+
+  const handleBreakDurationChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setBreakDuration(value);
+      if (!isActive && !isStudyTime) {
+        setTimeLeft(value * 60);
+      }
+    }
+  };
+
+  const generateAIAnalogy = async (studyNote) => {
+    try {
+      setAiResponse("Generating analogy..."); // Set loading state
+
+      const response = await fetch("/api/generate-analogy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studyNote }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json(); // Parse JSON response
+      setAiResponse(data.analogy || data.content); // Use the actual content
+    } catch (error) {
+      console.error("Error generating analogy:", error);
+      setAiResponse("Failed to generate analogy. Please try again.");
+    }
+  };
+
+  const generateAISummary = async (studyNote) => {
+    try {
+      setAiResponse("Generating key points summary...");
+
+      const response = await fetch("/api/generate-summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studyNote,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAiResponse(data.summary || data.content);
+      return data.content[0].text;
+    } catch (error) {
+      return "Failed to generate summary: " + error.message;
+    }
+  };
+
+  const courses = [
+    "Web Development Fundamentals",
+    "Advanced JavaScript",
+    "React Masterclass",
+    "Node.js Backend Development",
+    "UI/UX Design Principles",
+    "Data Structures & Algorithms",
+    "Python for Data Science",
+  ];
+
+  const intervalRef = useRef(null);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      {/* Banner */}
+      <a href="/study-plan" className="block cursor-pointer">
+        <div className="bg-indigo-600 text-white rounded-xl p-6 mb-8 shadow-lg transform hover:scale-[1.01] transition-transform duration-300 hover:bg-indigo-700 active:scale-[0.99]">
+          <h1 className="text-2xl md:text-3xl font-bold text-center">
+            Get Your Free Study Plan Now!
+          </h1>
+          <p className="text-center mt-2 opacity-90">
+            Personalized learning path tailored just for you
+          </p>
+        </div>
+      </a>
+
+      {/* Marquee */}
+      <div className="bg-white rounded-xl p-4 mb-8 shadow-md overflow-hidden">
+        <div className="text-lg font-semibold text-indigo-700 mb-2">
+          Popular Courses:
+        </div>
+        <div className="relative overflow-hidden">
+          <div className="animate-marquee whitespace-nowrap">
+            {courses.concat(courses).map((course, index) => (
+              <span key={index} className="mx-4 text-gray-700 inline-block">
+                {course} •
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Carousel */}
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+        {/* Progress Steps */}
+        <div className="flex justify-between px-6 pt-6 pb-2">
+          {[1, 2, 3, 4].map((step, index) => (
+            <div key={step} className="flex flex-col items-center">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                  index <= activeStep ? "bg-indigo-600" : "bg-gray-300"
+                }`}
+              >
+                {step}
+              </div>
+              <div
+                className={`text-xs mt-1 ${
+                  index <= activeStep
+                    ? "text-indigo-600 font-medium"
+                    : "text-gray-400"
+                }`}
+              >
+                {["Goal", "Duration", "Learn", "Assess"][index]}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Carousel Content */}
+        <div className="p-6">
+          {/* Step 1: Study Goal */}
+          {activeStep === 0 && (
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-indigo-700 mb-4">
+                Set Your Study Goal
+              </h2>
+              <FileUploader onFileUpload={handleFileUpload} />
+              <DocumentViewer
+                file={file}
+                fileContent={fileContent}
+                onTextSelected={handleTextSelected}
+              />
+              <button
+                onClick={handleNext}
+                disabled={!studyGoal.trim()}
+                className={`mt-6 px-6 py-3 rounded-lg font-medium ${
+                  studyGoal.trim()
+                    ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                } transition-colors`}
+              >
+                Continue
+              </button>
+            </div>
+          )}
+
+          {/* Step 2: Learning Duration */}
+          {activeStep === 1 && (
+            <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-sm">
+              <div className="mb-8">
+                <div className="flex flex-col items-center gap-6">
+                  <div className="w-full">
+                    <div className="space-y-2 text-center">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Study Duration
+                      </label>
+                      <div className="flex justify-center gap-3">
+                        <div className="w-32">
+                          <select
+                            value={Math.floor(studyDuration / 60)}
+                            onChange={(e) => {
+                              const hours = parseInt(e.target.value);
+                              const mins = studyDuration % 60;
+                              const totalMins = hours * 60 + mins;
+                              setStudyDuration(Math.max(25, totalMins));
+                            }}
+                            disabled={isActive}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                          >
+                            {[...Array(7)].map((_, i) => (
+                              <option key={i} value={i}>
+                                {i} {i === 1 ? "hour" : "hours"}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="w-32">
+                          <select
+                            value={studyDuration % 60}
+                            onChange={(e) => {
+                              const mins = parseInt(e.target.value);
+                              const hours = Math.floor(studyDuration / 60);
+                              const totalMins = hours * 60 + mins;
+                              setStudyDuration(Math.max(25, totalMins));
+                            }}
+                            disabled={isActive}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                          >
+                            {[...Array(12)].map((_, i) => (
+                              <option key={i * 5} value={i * 5}>
+                                {i * 5} mins
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Minimum study duration: 25 minutes
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg text-center">
+                <h3 className="text-sm font-medium text-gray-700 mb-1">
+                  Selected Duration
+                </h3>
+                <p className="text-lg font-semibold text-blue-600">
+                  {Math.floor(studyDuration / 60) > 0
+                    ? `${Math.floor(studyDuration / 60)} hour${
+                        Math.floor(studyDuration / 60) !== 1 ? "s" : ""
+                      } `
+                    : ""}
+                  {studyDuration % 60 > 0
+                    ? `${studyDuration % 60} minute${
+                        studyDuration % 60 !== 1 ? "s" : ""
+                      }`
+                    : ""}
+                </p>
+              </div>
+
+              <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+                <button
+                  onClick={handleBack}
+                  className="px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Back
+                </button>
+                <button
+                  onClick={handleStartLearning}
+                  disabled={studyDuration < 25}
+                  className={`px-8 py-3 text-white rounded-lg font-bold transition-colors shadow-md hover:shadow-lg ${
+                    studyDuration >= 25
+                      ? "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
+                      : "bg-indigo-300 cursor-not-allowed"
+                  }`}
+                >
+                  Start Learning
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Learning in Progress */}
+          {activeStep === 2 && (
+            <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+              <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+                {isStudyTime ? "Study Time" : "Break Time"}
+              </h1>
+              <div className="flex flex-col md:flex-row justify-between gap-4">
+                {/* Session Configuration - Now appears first on mobile */}
+                <div className="mb-6 order-2 md:order-1">
+                  <div className="grid grid-cols-3 gap-2 md:gap-4 text-sm">
+                    <div className="bg-gray-50 p-2 md:p-3 rounded-lg">
+                      <p className="text-gray-500">Study</p>
+                      <p className="font-medium">{studyDuration} min</p>
+                    </div>
+                    <div className="bg-gray-50 p-2 md:p-3 rounded-lg">
+                      <p className="text-gray-500">Break</p>
+                      <p className="font-medium">{breakDuration} min</p>
+                    </div>
+                    <div className="bg-gray-50 p-2 md:p-3 rounded-lg">
+                      <p className="text-gray-500">Sessions</p>
+                      <p className="font-medium">{totalCycles}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {totalCycles === 1
+                      ? `1 cycle (${studyDuration} min study)`
+                      : `${totalCycles} cycles (${studyDuration} min study → ${Math.floor(
+                          studyDuration / 25
+                        )}×25 + ${studyDuration % 25} min)`}
+                  </p>
+                </div>
+
+                {/* Timer Display - Now appears second on mobile */}
+                <div
+                  className={`text-center py-6 md:py-8 mb-4 rounded-lg order-1 md:order-2 ${
+                    isStudyTime ? "bg-blue-100" : "bg-green-100"
+                  }`}
+                >
+                  <div className="text-4xl md:text-5xl font-bold my-4 px-5">
+                    {formatTime(timeLeft)}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Session {cyclesCompleted + 1} of {totalCycles}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span>Progress</span>
+                  <span>{Math.round(progress * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className={`h-2.5 rounded-full ${
+                      isStudyTime ? "bg-blue-500" : "bg-green-500"
+                    }`}
+                    style={{ width: `${progress * 100}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between mt-2">
+                  {renderCycleSegments()}
+                </div>
+              </div>
+
+              {/* Study Section */}
+              <div
+                className={`mb-4 transition-all duration-300 ${
+                  studyNote && isStudyTime ? "opacity-100" : "opacity-0 h-0"
+                }`}
+              >
+                {studyNote && isStudyTime && (
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-gray-200">
+                    <div className="flex items-start">
+                      <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-indigo-600"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                            Current Focus
+                          </h3>
+                          <button
+                            onClick={() => setShowAIAssistant(!showAIAssistant)}
+                            className="flex items-center text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full transition-colors"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3 w-3 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                            AI Assistant
+                          </button>
+                        </div>
+
+                        <p className="text-gray-700 leading-relaxed bg-yellow-50/50 px-3 py-2 rounded-lg border-l-4 border-indigo-400 mb-2">
+                          {studyNote}
+                        </p>
+
+                        {showAIAssistant && (
+                          <div className="mt-3 bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+                            <div className="flex items-center text-blue-600 mb-2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              <span className="text-sm font-medium">
+                                AI Study Suggestions
+                              </span>
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                              {/* <button
+                                onClick={() => generateAIQuestion(studyNote)}
+                                className="w-full text-left bg-white hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 flex items-center"
+                              >
+                                <span>❓ Generate practice questions</span>
+                              </button> */}
+
+                              <button
+                                onClick={() => generateAISummary(studyNote)}
+                                className="w-full text-left bg-white hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 flex items-center"
+                              >
+                                <span>📝 Get key points summary</span>
+                              </button>
+
+                              <button
+                                onClick={() => generateAIAnalogy(studyNote)}
+                                className="w-full text-left bg-white hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 flex items-center"
+                              >
+                                <span>🔗 Create helpful analogy</span>
+                              </button>
+                            </div>
+
+                            {aiResponse && (
+                              <div className="mt-3 bg-white p-3 rounded-lg border border-gray-200">
+                                <div className="text-sm text-gray-700 whitespace-pre-line">
+                                  {aiResponse}
+                                </div>
+                                <button
+                                  onClick={() => setAiResponse(null)}
+                                  className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+                                >
+                                  Clear response
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-2 text-xs text-gray-500 flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3 w-3 mr-1"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Study time - Stay focused!
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-4 mt-6 mb-6">
+                {/* Back button */}
+                <button
+                  onClick={handleBack}
+                  className="px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center w-full sm:w-auto justify-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Back
+                </button>
+
+                {/* Timer controls */}
+                <div className="flex justify-center gap-4 w-full sm:w-auto">
+                  {!sessionCompleted ? (
+                    <>
+                      <button
+                        onClick={toggleTimer}
+                        className={`px-6 py-2 rounded-md font-medium w-full sm:w-auto ${
+                          isActive
+                            ? "bg-red-500 hover:bg-red-600 text-white"
+                            : "bg-blue-500 hover:bg-blue-600 text-white"
+                        }`}
+                      >
+                        {isActive ? "Pause" : "Start"}
+                      </button>
+                      <button
+                        onClick={resetTimer}
+                        className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md font-medium w-full sm:w-auto"
+                      >
+                        Reset
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleNext}
+                      className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium w-full sm:w-auto"
+                    >
+                      Complete Session
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Assessment */}
+          {activeStep === 3 && (
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-indigo-700 mb-4">
+                Assessment
+              </h2>
+
+              {assessmentScore === null ? (
+                <>
+                  <p className="text-gray-600 mb-6">
+                    Let's test what you've learned!
+                  </p>
+                  <div className="bg-gray-50 p-6 rounded-lg mb-6 text-left">
+                    <h3 className="font-medium mb-4">
+                      Question 1: What is the virtual DOM in React?
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        "A direct representation of the actual DOM",
+                        "A lightweight copy of the actual DOM",
+                        "A browser extension for debugging",
+                        "A server-side rendering technique",
+                      ].map((option, index) => (
+                        <div key={index} className="flex items-center">
+                          <input
+                            type="radio"
+                            id={`option-${index}`}
+                            name="quiz"
+                            className="mr-2"
+                          />
+                          <label htmlFor={`option-${index}`}>{option}</label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      onClick={handleBack}
+                      className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleAssessmentSubmit(
+                          Math.floor(Math.random() * 40) + 60
+                        )
+                      }
+                      className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                    <div className="text-5xl font-bold text-green-600 mb-2">
+                      {assessmentScore}%
+                    </div>
+                    <div className="text-green-700 font-medium">
+                      Congratulations!
+                    </div>
+                    <p className="text-green-600 mt-2">
+                      You've completed your study session
+                    </p>
+                  </div>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => {
+                        setActiveStep(0);
+                        setProgress(0);
+                        setAssessmentScore(null);
+                        setCyclesCompleted(0);
+                        setIsActive(false);
+                      }}
+                      className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Start New Session
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StudySection;

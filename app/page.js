@@ -11,7 +11,7 @@ export default function Loader() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push("/home");
+      router.push("/landing");
     }, 10000); // Changed from 240000 to 15000 (15 seconds)
     return () => clearTimeout(timer);
   }, []);

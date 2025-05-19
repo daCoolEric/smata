@@ -1,7 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaFire, FaTrophy, FaQuoteLeft, FaPlay, FaPause } from "react-icons/fa";
+import {
+  FaFire,
+  FaTrophy,
+  FaQuoteLeft,
+  FaPlay,
+  FaPause,
+  FaSun,
+  FaMoon,
+} from "react-icons/fa";
 
 export default function MotivationApp() {
   // States
@@ -10,6 +18,7 @@ export default function MotivationApp() {
   const [quote, setQuote] = useState("");
   const [energyLevel, setEnergyLevel] = useState(50);
   const [showAffirmation, setShowAffirmation] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   // Motivational Quotes
   const quotes = [
@@ -25,7 +34,7 @@ export default function MotivationApp() {
     "You're doing great!",
     "Keep going!",
     "One step at a time!",
-    "You’ve got this!",
+    "You've got this!",
   ];
 
   // Fetch a random quote
@@ -61,6 +70,11 @@ export default function MotivationApp() {
     setTimeLeft(25 * 60);
   };
 
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   // Initialize a quote on load
   useEffect(() => {
     getRandomQuote();
@@ -76,23 +90,62 @@ export default function MotivationApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50 flex flex-col items-center justify-center p-4">
+    <div
+      className={`min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ${
+        darkMode
+          ? "bg-gray-900 text-gray-100"
+          : "bg-gradient-to-b from-blue-50 to-purple-50 text-gray-800"
+      }`}
+    >
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 text-center"
+        className={`max-w-md w-full rounded-xl shadow-lg p-6 text-center transition-colors duration-300 ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
       >
-        <h1 className="text-3xl font-bold text-purple-600 mb-4">
+        {/* Theme Toggle */}
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={toggleDarkMode}
+            className={`p-2 rounded-full ${
+              darkMode
+                ? "bg-gray-700 text-yellow-300"
+                : "bg-gray-200 text-gray-700"
+            }`}
+            aria-label={
+              darkMode ? "Switch to light mode" : "Switch to dark mode"
+            }
+          >
+            {darkMode ? <FaSun /> : <FaMoon />}
+          </button>
+        </div>
+
+        <h1
+          className={`text-3xl font-bold mb-4 ${
+            darkMode ? "text-purple-400" : "text-purple-600"
+          }`}
+        >
           🔥 Stay Energized! 🔥
         </h1>
 
         {/* Motivational Quote */}
-        <div className="mb-6 p-4 bg-yellow-50 rounded-lg">
-          <FaQuoteLeft className="text-gray-400 mb-2" />
+        <div
+          className={`mb-6 p-4 rounded-lg transition-colors duration-300 ${
+            darkMode ? "bg-gray-700" : "bg-yellow-50"
+          }`}
+        >
+          <FaQuoteLeft
+            className={`mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}
+          />
           <p className="text-lg italic">{quote}</p>
           <button
             onClick={getRandomQuote}
-            className="mt-2 text-sm text-purple-600 hover:underline"
+            className={`mt-2 text-sm ${
+              darkMode
+                ? "text-purple-400 hover:underline"
+                : "text-purple-600 hover:underline"
+            }`}
           >
             New Quote
           </button>
@@ -127,7 +180,9 @@ export default function MotivationApp() {
             </button>
             <button
               onClick={resetTimer}
-              className="px-4 py-2 bg-gray-200 rounded-lg"
+              className={`px-4 py-2 rounded-lg ${
+                darkMode ? "bg-gray-700" : "bg-gray-200"
+              }`}
             >
               Reset
             </button>
@@ -142,21 +197,37 @@ export default function MotivationApp() {
             exit={{ scale: 0.8, opacity: 0 }}
             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
           >
-            <div className="bg-white p-6 rounded-lg shadow-xl text-center">
-              <h3 className="text-2xl font-bold text-green-600 mb-2">
+            <div
+              className={`p-6 rounded-lg shadow-xl text-center ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              <h3
+                className={`text-2xl font-bold mb-2 ${
+                  darkMode ? "text-green-400" : "text-green-600"
+                }`}
+              >
                 {affirmations[Math.floor(Math.random() * affirmations.length)]}
               </h3>
-              <p>Great job! 🎉</p>
+              <p>Great job! �</p>
             </div>
           </motion.div>
         )}
 
         {/* Progress Tracker */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <div
+          className={`mt-6 p-4 rounded-lg transition-colors duration-300 ${
+            darkMode ? "bg-gray-700" : "bg-blue-50"
+          }`}
+        >
           <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
             <FaTrophy className="text-yellow-500" /> Today's Progress
           </h3>
-          <div className="w-full bg-gray-200 rounded-full h-4">
+          <div
+            className={`w-full rounded-full h-4 ${
+              darkMode ? "bg-gray-600" : "bg-gray-200"
+            }`}
+          >
             <div
               className="bg-green-500 h-4 rounded-full"
               style={{ width: `${energyLevel}%` }}

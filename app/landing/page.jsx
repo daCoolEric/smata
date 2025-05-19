@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { BookOpen, Clock, BrainCircuit, ArrowRight } from "lucide-react";
 
-export default function HomePage() {
+export default function LandingPage() {
   const router = useRouter();
 
   const features = [
