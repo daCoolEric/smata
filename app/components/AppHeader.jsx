@@ -9,6 +9,11 @@ import {
   Sun,
   Moon,
   LogOut,
+  Home,
+  Brain,
+  Zap,
+  BookOpen,
+  Calendar,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";

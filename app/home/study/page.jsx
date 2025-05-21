@@ -32,8 +32,14 @@ const StudySection = () => {
   const [skippedBreaks, setSkippedBreaks] = useState(0);
   const [isResuming, setIsResuming] = useState(false);
   const [proficiencyScore, setProficiencyScore] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const router = useRouter();
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   // Calculate segments based on study duration
   const calculateSegments = useCallback(
@@ -243,17 +249,31 @@ const StudySection = () => {
 
       return (
         <div key={`segment-${index}`} className="flex-1 mx-1">
-          <div className="h-1 w-full bg-gray-200 rounded-sm mb-1">
+          <div
+            className={`h-2 w-full ${
+              darkMode ? "bg-gray-700" : "bg-gray-200"
+            } rounded-sm mb-1`}
+          >
             <div
               className={`h-full rounded-sm ${
                 isCompleted
                   ? isStudySegment
-                    ? "bg-blue-500"
+                    ? darkMode
+                      ? "bg-blue-400"
+                      : "bg-blue-500"
+                    : darkMode
+                    ? "bg-green-400"
                     : "bg-green-500"
                   : isCurrent
                   ? isStudySegment
-                    ? "bg-blue-300"
+                    ? darkMode
+                      ? "bg-blue-300"
+                      : "bg-blue-300"
+                    : darkMode
+                    ? "bg-green-300"
                     : "bg-green-300"
+                  : darkMode
+                  ? "bg-gray-600"
                   : "bg-gray-200"
               }`}
               style={{
@@ -262,7 +282,11 @@ const StudySection = () => {
               }}
             />
           </div>
-          <div className="text-xs text-center text-gray-500">
+          <div
+            className={`text-xs text-center ${
+              darkMode ? "text-gray-300" : "text-gray-500"
+            }`}
+          >
             {segment.type === "study" ? "S" : "B"} {Math.ceil((index + 1) / 2)}
           </div>
         </div>
@@ -401,10 +425,67 @@ const StudySection = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div
+      className={`min-h-screen ${
+        darkMode
+          ? "bg-gray-900 text-gray-100"
+          : "bg-gradient-to-br from-blue-50 to-indigo-100"
+      } py-8  transition-colors duration-300`}
+    >
+      {/* Theme Toggle */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={toggleDarkMode}
+          className={`p-2 rounded-full ${
+            darkMode
+              ? "bg-gray-700 text-yellow-300"
+              : "bg-gray-200 text-gray-700"
+          }`}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
+
       {/* Banner */}
-      <a href="/home/study-plan" className="block cursor-pointer">
-        <div className="bg-indigo-600 text-white rounded-xl p-6 mb-8 shadow-lg transform hover:scale-[1.01] transition-transform duration-300 hover:bg-indigo-700 active:scale-[0.99]">
+      <a href="/home/study-plan" className="block cursor-pointer ">
+        <div
+          className={`${
+            darkMode ? "bg-indigo-800" : "bg-indigo-600"
+          } text-white rounded-xl p-6 mb-8 shadow-lg transform hover:scale-[1.01] transition-transform duration-300 ${
+            darkMode ? "hover:bg-indigo-900" : "hover:bg-indigo-700"
+          } active:scale-[0.99]`}
+        >
           <h1 className="text-2xl md:text-3xl font-bold text-center">
             Get Your Free Study Plan Now!
           </h1>
@@ -415,14 +496,28 @@ const StudySection = () => {
       </a>
 
       {/* Marquee */}
-      <div className="bg-white rounded-xl p-4 mb-8 shadow-md overflow-hidden">
-        <div className="text-lg font-semibold text-indigo-700 mb-2">
+      <div
+        className={`${
+          darkMode ? "bg-gray-800" : "bg-white"
+        } rounded-xl p-4 mb-8 shadow-md overflow-hidden w-full      // Wider on mobile (90% of viewport width)
+        `}
+      >
+        <div
+          className={`text-lg font-semibold ${
+            darkMode ? "text-indigo-400" : "text-indigo-700"
+          } mb-2`}
+        >
           Popular Courses:
         </div>
         <div className="relative overflow-hidden">
           <div className="animate-marquee whitespace-nowrap">
             {courses.concat(courses).map((course, index) => (
-              <span key={index} className="mx-4 text-gray-700 inline-block">
+              <span
+                key={index}
+                className={`mx-4 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                } inline-block`}
+              >
                 {course} •
               </span>
             ))}
@@ -433,12 +528,22 @@ const StudySection = () => {
       {/* Break Popup */}
       {showBreakPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+          <div
+            className={`${
+              darkMode ? "bg-gray-800" : "bg-white"
+            } rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl`}
+          >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-green-600">Break Time!</h2>
+              <h2
+                className={`text-2xl font-bold ${
+                  darkMode ? "text-green-400" : "text-green-600"
+                }`}
+              >
+                Break Time!
+              </h2>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-green-500"
+                className="h-8 w-8 text-green-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -452,16 +557,30 @@ const StudySection = () => {
               </svg>
             </div>
 
-            <p className="text-gray-600 mb-4">
+            <p
+              className={`${darkMode ? "text-gray-300" : "text-gray-600"} mb-4`}
+            >
               Take a short break to recharge your brain. Stand up, stretch, or
               just relax for a moment.
             </p>
 
-            <div className="bg-green-50 rounded-lg p-4 flex flex-col items-center mb-6">
-              <div className="text-3xl font-bold text-green-700 mb-2">
+            <div
+              className={`${
+                darkMode ? "bg-green-900" : "bg-green-50"
+              } rounded-lg p-4 flex flex-col items-center mb-6`}
+            >
+              <div
+                className={`text-4xl font-bold ${
+                  darkMode ? "text-green-300" : "text-green-700"
+                } mb-2`}
+              >
                 {formatTime(timeLeft)}
               </div>
-              <div className="text-sm text-green-600">
+              <div
+                className={`text-sm ${
+                  darkMode ? "text-green-400" : "text-green-600"
+                }`}
+              >
                 Break {Math.ceil((currentSegmentIndex + 1) / 2)} of{" "}
                 {Math.floor(segments.length / 2)}
               </div>
@@ -470,11 +589,17 @@ const StudySection = () => {
             <div className="flex flex-col gap-3">
               <button
                 onClick={skipBreak}
-                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors border border-gray-300 flex items-center justify-center"
+                className={`w-full py-4 ${
+                  darkMode
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-100"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                } rounded-lg font-medium transition-colors border ${
+                  darkMode ? "border-gray-600" : "border-gray-300"
+                } flex items-center justify-center`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2 text-red-500"
+                  className="h-6 w-6 mr-2 text-red-500"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -492,22 +617,42 @@ const StudySection = () => {
       )}
 
       {/* Carousel */}
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+      <div
+        className={`mx-auto ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        } rounded-xl shadow-xl overflow-hidden
+   w-full      // Wider on mobile (90% of viewport width)
+   sm:w-[90vw]   // Slightly narrower on tablet
+   md:w-[70vw]   // Narrower on small desktop
+   lg:w-[50vw]   // Much narrower on desktop
+   xl:w-[40vw]   // Very compact on large screens
+  `}
+      >
         {/* Progress Steps */}
         <div className="flex justify-between px-6 pt-6 pb-2">
           {[1, 2, 3, 4].map((step, index) => (
             <div key={step} className="flex flex-col items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                  index <= activeStep ? "bg-indigo-600" : "bg-gray-300"
+                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                  index <= activeStep
+                    ? darkMode
+                      ? "bg-indigo-500"
+                      : "bg-indigo-600"
+                    : darkMode
+                    ? "bg-gray-600"
+                    : "bg-gray-300"
                 }`}
               >
                 {step}
               </div>
               <div
-                className={`text-xs mt-1 ${
+                className={`text-sm mt-1 ${
                   index <= activeStep
-                    ? "text-indigo-600 font-medium"
+                    ? darkMode
+                      ? "text-indigo-400 font-medium"
+                      : "text-indigo-600 font-medium"
+                    : darkMode
+                    ? "text-gray-400"
                     : "text-gray-400"
                 }`}
               >
@@ -518,25 +663,37 @@ const StudySection = () => {
         </div>
 
         {/* Carousel Content */}
-        <div className="p-6">
+        <div className="p-2 sm:p-6">
           {/* Step 1: Study Goal */}
           {activeStep === 0 && (
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-indigo-700 mb-4">
+              <h2
+                className={`text-2xl font-bold ${
+                  darkMode ? "text-indigo-400" : "text-indigo-700"
+                } mb-6`}
+              >
                 Set Your Study Goal
               </h2>
-              <FileUploader onFileUpload={handleFileUpload} />
+              <FileUploader
+                onFileUpload={handleFileUpload}
+                darkMode={darkMode}
+              />
               <DocumentViewer
                 file={file}
                 fileContent={fileContent}
                 onTextSelected={handleTextSelected}
+                darkMode={darkMode}
               />
               <button
                 onClick={handleNext}
                 disabled={!studyGoal.trim()}
-                className={`mt-6 px-6 py-3 rounded-lg font-medium ${
+                className={`mt-8 px-8 py-4 rounded-lg font-medium text-lg ${
                   studyGoal.trim()
-                    ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    ? darkMode
+                      ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                    : darkMode
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 } transition-colors`}
               >
@@ -547,16 +704,24 @@ const StudySection = () => {
 
           {/* Step 2: Learning Duration */}
           {activeStep === 1 && (
-            <div className="max-w-md mx-auto p-2 bg-white rounded-xl shadow-sm">
+            <div
+              className={`max-w-md mx-auto p-4 ${
+                darkMode ? "bg-gray-700" : "bg-white"
+              } rounded-xl ${darkMode ? "" : "shadow-sm"}`}
+            >
               <div className="mb-8">
                 <div className="flex flex-col items-center gap-6">
                   <div className="w-full">
-                    <div className="space-y-2 text-center">
-                      <label className="block text-sm font-medium text-gray-700">
+                    <div className="space-y-4 text-center">
+                      <label
+                        className={`block text-lg font-medium ${
+                          darkMode ? "text-gray-200" : "text-gray-700"
+                        }`}
+                      >
                         Study Duration
                       </label>
-                      <div className="flex justify-center gap-3">
-                        <div className="w-32">
+                      <div className="flex justify-center gap-4">
+                        <div className="w-40">
                           <select
                             value={Math.floor(studyDuration / 60)}
                             onChange={(e) => {
@@ -566,7 +731,15 @@ const StudySection = () => {
                               setStudyDuration(Math.max(2, totalMins));
                             }}
                             disabled={isActive}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                            className={`w-full px-4 py-3 border ${
+                              darkMode
+                                ? "bg-gray-800 border-gray-600 text-white"
+                                : "border-gray-300"
+                            } rounded-lg focus:outline-none focus:ring-2 ${
+                              darkMode
+                                ? "focus:ring-indigo-500"
+                                : "focus:ring-blue-500"
+                            } text-center`}
                           >
                             {[...Array(7)].map((_, i) => (
                               <option key={i} value={i}>
@@ -575,7 +748,7 @@ const StudySection = () => {
                             ))}
                           </select>
                         </div>
-                        <div className="w-32">
+                        <div className="w-40">
                           <select
                             value={studyDuration % 60}
                             onChange={(e) => {
@@ -585,7 +758,15 @@ const StudySection = () => {
                               setStudyDuration(Math.max(2, totalMins));
                             }}
                             disabled={isActive}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                            className={`w-full px-4 py-3 border ${
+                              darkMode
+                                ? "bg-gray-800 border-gray-600 text-white"
+                                : "border-gray-300"
+                            } rounded-lg focus:outline-none focus:ring-2 ${
+                              darkMode
+                                ? "focus:ring-indigo-500"
+                                : "focus:ring-blue-500"
+                            } text-center`}
                           >
                             {[...Array(12)].map((_, i) => (
                               <option key={i * 5} value={i * 5}>
@@ -595,7 +776,11 @@ const StudySection = () => {
                           </select>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p
+                        className={`text-sm ${
+                          darkMode ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
                         Minimum study duration: 2 minutes
                       </p>
                     </div>
@@ -603,11 +788,23 @@ const StudySection = () => {
                 </div>
               </div>
 
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg text-center">
-                <h3 className="text-sm font-medium text-gray-700 mb-1">
+              <div
+                className={`mb-6 p-5 ${
+                  darkMode ? "bg-blue-900" : "bg-blue-50"
+                } rounded-lg text-center`}
+              >
+                <h3
+                  className={`text-md font-medium ${
+                    darkMode ? "text-gray-200" : "text-gray-700"
+                  } mb-2`}
+                >
                   Selected Duration
                 </h3>
-                <p className="text-lg font-semibold text-blue-600">
+                <p
+                  className={`text-xl font-semibold ${
+                    darkMode ? "text-blue-300" : "text-blue-600"
+                  }`}
+                >
                   {Math.floor(studyDuration / 60) > 0
                     ? `${Math.floor(studyDuration / 60)} hour${
                         Math.floor(studyDuration / 60) !== 1 ? "s" : ""
@@ -624,11 +821,15 @@ const StudySection = () => {
               <div className="flex justify-between items-center pt-6 border-t border-gray-100">
                 <button
                   onClick={handleBack}
-                  className="px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center"
+                  className={`px-6 py-3 rounded-lg font-medium ${
+                    darkMode
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-gray-600 hover:bg-gray-50"
+                  } transition-colors flex items-center`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2"
+                    className="h-6 w-6 mr-2"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -643,9 +844,13 @@ const StudySection = () => {
                 <button
                   onClick={handleStartLearning}
                   disabled={studyDuration < 2}
-                  className={`px-8 py-3 text-white rounded-lg font-bold transition-colors shadow-md hover:shadow-lg ${
+                  className={`px-8 py-3 text-white rounded-lg font-bold transition-colors shadow-md hover:shadow-lg text-lg ${
                     studyDuration >= 2
-                      ? "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
+                      ? darkMode
+                        ? "bg-indigo-700 hover:bg-indigo-600"
+                        : "bg-indigo-600 hover:bg-indigo-700"
+                      : darkMode
+                      ? "bg-indigo-900 cursor-not-allowed"
                       : "bg-indigo-300 cursor-not-allowed"
                   }`}
                 >
@@ -657,25 +862,52 @@ const StudySection = () => {
 
           {/* Step 3: Learning in Progress */}
           {activeStep === 2 && (
-            <div className="max-w-screen mx-auto p-2 bg-white rounded-lg shadow-md">
-              <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
+            <div
+              className={`max-w-screen  p-0.5 ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              } rounded-lg ${darkMode ? "" : "shadow-md"}`}
+            >
+              <h1
+                className={`text-2xl md:text-3xl font-bold text-center mb-6 ${
+                  darkMode ? "text-gray-100" : "text-gray-800"
+                }`}
+              >
                 {isStudyTime ? "Study Time" : "Break Time"}
               </h1>
-              <div className="flex flex-col md:flex-row justify-between gap-4">
-                {/* Session Configuration - Now appears first on mobile */}
+
+              <div className="flex flex-col md:flex-row justify-between gap-6">
+                {/* Session Configuration */}
                 <div className="mb-6 order-2 md:order-1 md:w-1/3">
-                  <div className="grid grid-cols-1 gap-2 md:gap-4 text-sm">
-                    <div className="bg-gray-50 p-2 md:p-3 rounded-lg">
-                      <p className="text-gray-500">Study</p>
-                      <p className="font-medium">{studyDuration} min</p>
+                  <div className="grid grid-cols-1 gap-4 md:gap-4 text-sm">
+                    <div
+                      className={`${
+                        darkMode ? "bg-gray-700" : "bg-gray-50"
+                      } p-4 rounded-lg`}
+                    >
+                      <p
+                        className={darkMode ? "text-gray-300" : "text-gray-500"}
+                      >
+                        Study Duration
+                      </p>
+                      <p
+                        className={`text-lg font-semibold ${
+                          darkMode ? "text-white" : "text-gray-800"
+                        }`}
+                      >
+                        {studyDuration} min
+                      </p>
                     </div>
 
-                    {/* Book Icon */}
-                    <div className="flex justify-center my-2">
-                      <div className="p-3 bg-indigo-100 rounded-full">
+                    {/* Book Icon - Larger on mobile */}
+                    <div className="flex justify-center my-4">
+                      <div
+                        className={`p-5 ${
+                          darkMode ? "bg-indigo-900" : "bg-indigo-100"
+                        } rounded-full`}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-8 w-8 text-indigo-600"
+                          className="h-12 w-12 text-indigo-600"
                           viewBox="0 0 20 20"
                           fill="currentColor"
                         >
@@ -684,18 +916,22 @@ const StudySection = () => {
                       </div>
                     </div>
 
-                    {/* Timer controls */}
-                    <div className="flex justify-center gap-4 w-full sm:w-auto">
+                    {/* Timer controls - Larger buttons on mobile */}
+                    <div className="flex flex-col gap-4 w-full">
                       {!sessionCompleted ? (
                         <>
                           {!isActive ? (
                             <button
                               onClick={startNextSession}
-                              className={`px-6 py-2 rounded-md font-medium w-full sm:w-auto ${
+                              className={`px-6 py-4 rounded-lg font-medium w-full text-lg ${
                                 isStudyTime
-                                  ? "bg-blue-500 hover:bg-blue-600 text-white"
-                                  : "bg-green-500 hover:bg-green-600 text-white"
-                              }`}
+                                  ? darkMode
+                                    ? "bg-blue-600 hover:bg-blue-500"
+                                    : "bg-blue-500 hover:bg-blue-600"
+                                  : darkMode
+                                  ? "bg-green-600 hover:bg-green-500"
+                                  : "bg-green-500 hover:bg-green-600"
+                              } text-white`}
                             >
                               {isStudyTime
                                 ? isResuming
@@ -706,9 +942,11 @@ const StudySection = () => {
                           ) : (
                             <button
                               onClick={toggleTimer}
-                              className={`px-6 py-2 rounded-md font-medium w-full sm:w-auto ${
+                              className={`px-6 py-4 rounded-lg font-medium w-full text-lg ${
                                 isActive
                                   ? "bg-red-500 hover:bg-red-600 text-white"
+                                  : darkMode
+                                  ? "bg-blue-600 hover:bg-blue-500 text-white"
                                   : "bg-blue-500 hover:bg-blue-600 text-white"
                               }`}
                             >
@@ -719,7 +957,7 @@ const StudySection = () => {
                       ) : (
                         <button
                           onClick={handleNext}
-                          className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium w-full sm:w-auto"
+                          className="px-6 py-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium w-full text-lg"
                         >
                           Assessment
                         </button>
@@ -728,16 +966,30 @@ const StudySection = () => {
                   </div>
                 </div>
 
-                {/* Timer Display - Now appears second on mobile */}
+                {/* Timer Display - Larger on mobile */}
                 <div
-                  className={`text-center py-6 md:py-8 mb-4 rounded-lg order-1 md:order-2 md:w-2/3 ${
-                    isStudyTime ? "bg-blue-100" : "bg-green-100"
+                  className={`text-center py-8 md:py-10 mb-6 rounded-lg order-1 md:order-2 md:w-2/3 ${
+                    isStudyTime
+                      ? darkMode
+                        ? "bg-blue-900"
+                        : "bg-blue-100"
+                      : darkMode
+                      ? "bg-green-900"
+                      : "bg-green-100"
                   }`}
                 >
-                  <div className="text-4xl md:text-5xl font-bold my-4 px-5">
+                  <div
+                    className={`text-6xl md:text-7xl font-bold my-6 px-5 ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {formatTime(timeLeft)}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div
+                    className={`text-lg ${
+                      darkMode ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  >
                     {isStudyTime ? "Study" : "Break"}{" "}
                     {Math.ceil((currentSegmentIndex + 1) / 2)} of{" "}
                     {segments.filter((s) => s.type === "study").length}
@@ -745,15 +997,30 @@ const StudySection = () => {
                 </div>
               </div>
 
-              <div className="mb-6">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
+              {/* Progress Section - Enhanced for mobile */}
+              <div className="mb-8">
+                <div
+                  className={`flex justify-between text-base ${
+                    darkMode ? "text-gray-300" : "text-gray-500"
+                  } mb-3`}
+                >
                   <span>Progress</span>
                   <span>{Math.round(progress * 100)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className={`w-full ${
+                    darkMode ? "bg-gray-700" : "bg-gray-200"
+                  } rounded-full h-4 mb-2`}
+                >
                   <div
-                    className={`h-2.5 rounded-full ${
-                      isStudyTime ? "bg-blue-500" : "bg-green-500"
+                    className={`h-4 rounded-full ${
+                      isStudyTime
+                        ? darkMode
+                          ? "bg-blue-400"
+                          : "bg-blue-500"
+                        : darkMode
+                        ? "bg-green-400"
+                        : "bg-green-500"
                     }`}
                     style={{ width: `${progress * 100}%` }}
                   ></div>
@@ -763,19 +1030,29 @@ const StudySection = () => {
                 </div>
               </div>
 
-              {/* Study Section */}
+              {/* Enhanced Study Section for mobile */}
               <div
-                className={`mb-4 transition-all duration-300 ${
+                className={`transition-all duration-300 mb-6 w-full ${
                   studyNote && isStudyTime ? "opacity-100" : "opacity-0 h-0"
                 }`}
               >
                 {studyNote && isStudyTime && (
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-gray-200">
-                    <div className="flex items-start">
-                      <div className="bg-indigo-100 p-2 rounded-lg mr-3">
+                  <div
+                    className={`${
+                      darkMode ? "bg-gray-700/90" : "bg-white/90"
+                    } backdrop-blur-sm rounded-xl p-2 shadow-md border ${
+                      darkMode ? "border-gray-600" : "border-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-start w-full">
+                      {/* <div
+                        className={`${
+                          darkMode ? "bg-indigo-900" : "bg-indigo-100"
+                        } p-3 rounded-lg mr-4`}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 text-indigo-600"
+                          className="h-8 w-8 text-indigo-600"
                           viewBox="0 0 20 20"
                           fill="currentColor"
                         >
@@ -785,19 +1062,31 @@ const StudySection = () => {
                             clipRule="evenodd"
                           />
                         </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                      </div> */}
+                      <div className="flex-1 w-full">
+                        <div className="flex flex-row justify-between p-3 sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
+                          <h3
+                            className={`text-lg w-[80vw] sm:text-xl font-semibold ${
+                              darkMode ? "text-white" : "text-gray-800"
+                            }`}
+                          >
                             Current Focus
                           </h3>
                           <button
                             onClick={() => setShowAIAssistant(!showAIAssistant)}
-                            className="flex items-center text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full transition-colors"
+                            className={`flex items-center justify-center sm:justify-start text-sm sm:text-sm ${
+                              darkMode
+                                ? "bg-indigo-700 hover:bg-indigo-600 text-white"
+                                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                            } px-4 py-2.5 rounded-full transition-colors w-full shadow-md ${
+                              darkMode
+                                ? "shadow-indigo-900/50"
+                                : "shadow-indigo-500/30"
+                            }`}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="h-3 w-3 mr-1"
+                              className="h-4 w-4 sm:h-4 sm:w-4 mr-2"
                               viewBox="0 0 20 20"
                               fill="currentColor"
                             >
@@ -806,18 +1095,39 @@ const StudySection = () => {
                             AI Assistant
                           </button>
                         </div>
-                        <div className="max-w-screen">
-                          <p className="text-gray-700 leading-relaxed bg-yellow-50/50 px-3 py-2 rounded-lg border-l-4 border-indigo-400 mb-2">
+
+                        <div className="mb-4">
+                          <p
+                            className={`${
+                              darkMode ? "text-gray-200" : "text-gray-700"
+                            } leading-relaxed ${
+                              darkMode ? "bg-yellow-900/50" : "bg-yellow-50/50"
+                            } px-4 py-3 rounded-lg border-l-4 ${
+                              darkMode
+                                ? "border-indigo-500"
+                                : "border-indigo-400"
+                            } text-lg`}
+                          >
                             {studyNote}
                           </p>
                         </div>
 
                         {showAIAssistant && (
-                          <div className="mt-3 bg-blue-50/50 rounded-lg p-3 border border-blue-100">
-                            <div className="flex items-center text-blue-600 mb-2">
+                          <div
+                            className={`mt-4 ${
+                              darkMode ? "bg-blue-900/50" : "bg-blue-50/50"
+                            } rounded-lg p-4 border ${
+                              darkMode ? "border-blue-700" : "border-blue-100"
+                            }`}
+                          >
+                            <div
+                              className={`flex items-center ${
+                                darkMode ? "text-blue-300" : "text-blue-600"
+                              } mb-3`}
+                            >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 mr-2"
+                                className="h-5 w-5 mr-2"
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
                               >
@@ -827,35 +1137,69 @@ const StudySection = () => {
                                   clipRule="evenodd"
                                 />
                               </svg>
-                              <span className="text-sm font-medium">
+                              <span className="text-md font-medium">
                                 AI Study Suggestions
                               </span>
                             </div>
 
-                            <div className="space-y-2 text-sm">
+                            <div className="space-y-3">
                               <button
                                 onClick={() => generateAISummary(studyNote)}
-                                className="w-full text-left bg-white hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 flex items-center"
+                                className={`w-full text-left ${
+                                  darkMode
+                                    ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
+                                    : "bg-white hover:bg-blue-100"
+                                } px-4 py-3 rounded-lg border ${
+                                  darkMode
+                                    ? "border-gray-600"
+                                    : "border-blue-200"
+                                } flex items-center`}
                               >
-                                <span>📝 Get key points summary</span>
+                                <span className="text-lg mr-2">📝</span>
+                                <span>Get key points summary</span>
                               </button>
 
                               <button
                                 onClick={() => generateAIAnalogy(studyNote)}
-                                className="w-full text-left bg-white hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 flex items-center"
+                                className={`w-full text-left ${
+                                  darkMode
+                                    ? "bg-gray-800 hover:bg-gray-700 text-gray-100"
+                                    : "bg-white hover:bg-blue-100"
+                                } px-4 py-3 rounded-lg border ${
+                                  darkMode
+                                    ? "border-gray-600"
+                                    : "border-blue-200"
+                                } flex items-center`}
                               >
-                                <span>🔗 Create helpful analogy</span>
+                                <span className="text-lg mr-2">🔗</span>
+                                <span>Create helpful analogy</span>
                               </button>
                             </div>
 
                             {aiResponse && (
-                              <div className="mt-3 bg-white p-3 rounded-lg border border-gray-200">
-                                <div className="text-sm text-gray-700 whitespace-pre-line">
+                              <div
+                                className={`mt-4 ${
+                                  darkMode ? "bg-gray-700" : "bg-white"
+                                } p-4 rounded-lg border ${
+                                  darkMode
+                                    ? "border-gray-600"
+                                    : "border-gray-200"
+                                }`}
+                              >
+                                <div
+                                  className={`text-md ${
+                                    darkMode ? "text-gray-200" : "text-gray-700"
+                                  } whitespace-pre-line`}
+                                >
                                   {aiResponse}
                                 </div>
                                 <button
                                   onClick={() => setAiResponse(null)}
-                                  className="mt-2 text-xs text-gray-500 hover:text-gray-700"
+                                  className={`mt-3 text-sm ${
+                                    darkMode
+                                      ? "text-gray-400 hover:text-gray-300"
+                                      : "text-gray-500 hover:text-gray-700"
+                                  }`}
                                 >
                                   Clear response
                                 </button>
@@ -864,16 +1208,20 @@ const StudySection = () => {
                           </div>
                         )}
 
-                        <div className="mt-2 text-xs text-gray-500 flex items-center">
+                        <div
+                          className={`mt-4 text-sm ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          } flex items-center`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-3 w-3 mr-1"
+                            className="h-5 w-5 mr-2"
                             viewBox="0 0 20 20"
                             fill="currentColor"
                           >
                             <path
                               fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
                               clipRule="evenodd"
                             />
                           </svg>
@@ -885,15 +1233,19 @@ const StudySection = () => {
                 )}
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-4 mt-6 mb-6">
-                {/* Back button */}
+              {/* Navigation buttons - Enhanced for mobile */}
+              <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-4 mt-6">
                 <button
                   onClick={handleBack}
-                  className="px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center w-full sm:w-auto justify-center"
+                  className={`px-6 py-4 rounded-lg font-medium ${
+                    darkMode
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-gray-600 hover:bg-gray-50"
+                  } transition-colors flex items-center justify-center w-full text-lg`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2"
+                    className="h-6 w-6 mr-2"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -910,27 +1262,35 @@ const StudySection = () => {
           )}
 
           {/* Step 4: Assessment */}
-
           {activeStep === 3 && (
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-indigo-700 mb-4">
+            <div className="w-full text-center">
+              <h2
+                className={`text-2xl font-bold ${
+                  darkMode ? "text-indigo-400" : "text-indigo-700"
+                } mb-6`}
+              >
                 Assessment
               </h2>
               <QuestionGenerator
                 selectedText={studyNote}
                 onProficiencyChange={(score) => setProficiencyScore(score)}
+                darkMode={darkMode}
               />
 
               <div className="flex justify-center">
-                <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-4 mt-6 mb-6">
+                <div className="flex flex-col-reverse sm:flex-row justify-center items-center gap-4 mt-8 mb-6">
                   {/* Back button */}
                   <button
                     onClick={handleBack}
-                    className="px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center w-full sm:w-auto justify-center"
+                    className={`px-8 py-3 rounded-lg font-medium ${
+                      darkMode
+                        ? "text-gray-300 hover:bg-gray-700"
+                        : "text-gray-600 hover:bg-gray-50"
+                    } transition-colors flex items-center w-full sm:w-auto justify-center text-lg`}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2"
+                      className="h-6 w-6 mr-2"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -947,16 +1307,20 @@ const StudySection = () => {
                   {proficiencyScore !== null && (
                     <button
                       onClick={() => router.push("/home/dashboard")}
-                      className={`px-6 py-3 rounded-lg font-medium flex items-center w-full sm:w-auto justify-center ${
+                      className={`px-8 py-3 rounded-lg font-medium flex items-center w-full sm:w-auto justify-center text-lg ${
                         proficiencyScore >= 80
-                          ? "bg-green-600 text-white hover:bg-green-700"
+                          ? darkMode
+                            ? "bg-green-600 hover:bg-green-500"
+                            : "bg-green-600 hover:bg-green-700"
+                          : darkMode
+                          ? "bg-gray-600 text-gray-400"
                           : "bg-gray-300 text-gray-600"
                       } transition-colors`}
                       disabled={proficiencyScore < 80}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2"
+                        className="h-6 w-6 mr-2"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >

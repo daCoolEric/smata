@@ -2,7 +2,12 @@
 import { useState, useEffect } from "react";
 import mammoth from "mammoth";
 
-export default function DocumentViewer({ file, fileContent, onTextSelected }) {
+export default function DocumentViewer({
+  file,
+  fileContent,
+  onTextSelected,
+  darkMode = false,
+}) {
   const [documentText, setDocumentText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,15 +77,13 @@ export default function DocumentViewer({ file, fileContent, onTextSelected }) {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent({
-          normalizeWhitespace: false, // Preserve original whitespace
-          disableCombineTextItems: false, // Keep text items separate for better formatting
+          normalizeWhitespace: false,
+          disableCombineTextItems: false,
         });
 
-        // Group text items by their Y position to maintain line structure
         const textItemsByLine = {};
 
         content.items.forEach((item) => {
-          // Use transform matrix to get exact position if available
           const y = item.transform ? item.transform[5] : 0;
           if (!textItemsByLine[y]) {
             textItemsByLine[y] = [];
@@ -88,30 +91,24 @@ export default function DocumentViewer({ file, fileContent, onTextSelected }) {
           textItemsByLine[y].push(item);
         });
 
-        // Sort lines by Y position (top to bottom)
         const sortedLines = Object.keys(textItemsByLine)
-          .sort((a, b) => b - a) // Higher Y values come first (PDF coordinate system)
+          .sort((a, b) => b - a)
           .map((y) => textItemsByLine[y]);
 
-        // Process each line
         for (const line of sortedLines) {
-          // Sort items in the line by X position (left to right)
           line.sort((a, b) => {
             const aX = a.transform ? a.transform[4] : 0;
             const bX = b.transform ? b.transform[4] : 0;
             return aX - bX;
           });
 
-          // Build the line text
           let lineText = "";
           let lastX = 0;
 
           for (const item of line) {
             const itemX = item.transform ? item.transform[4] : 0;
 
-            // Add spaces if there's a significant gap between items
             if (itemX - lastX > 5 && lastX !== 0) {
-              // 5 is an arbitrary threshold
               lineText += " ";
             }
 
@@ -122,9 +119,7 @@ export default function DocumentViewer({ file, fileContent, onTextSelected }) {
           text += lineText + "\n";
         }
 
-        // Add page break if not the last page
         if (i < pdf.numPages) {
-          // text += "\n--- Page Break ---\n\n";
           text += "\n";
         }
       }
@@ -207,14 +202,32 @@ export default function DocumentViewer({ file, fileContent, onTextSelected }) {
   };
 
   return (
-    <div className="border rounded-lg p-4 mt-4 bg-white">
-      <h2 className="text-xl font-semibold mb-4">Document Preview</h2>
+    <div
+      className={`border rounded-lg p-4 mt-4 ${
+        darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+      }`}
+    >
+      <h2
+        className={`text-xl font-semibold mb-4 ${
+          darkMode ? "text-white" : "text-gray-800"
+        }`}
+      >
+        Document Preview
+      </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+        <div
+          className={`mb-4 p-3 rounded-md ${
+            darkMode ? "bg-red-900/50 text-red-200" : "bg-red-50 text-red-700"
+          }`}
+        >
           <p className="font-medium">Error:</p>
           <p>{error}</p>
-          <p className="mt-2 text-sm">
+          <p
+            className={`mt-2 text-sm ${
+              darkMode ? "text-red-300" : "text-red-600"
+            }`}
+          >
             Try a different file or check if the file contains selectable text.
           </p>
         </div>
@@ -223,29 +236,57 @@ export default function DocumentViewer({ file, fileContent, onTextSelected }) {
       {loading ? (
         <div className="text-center py-10">
           <div className="flex justify-center items-center space-x-2">
-            <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce"></div>
-            <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce delay-100"></div>
-            <div className="w-4 h-4 rounded-full bg-blue-600 animate-bounce delay-200"></div>
+            <div
+              className={`w-4 h-4 rounded-full animate-bounce ${
+                darkMode ? "bg-blue-400" : "bg-blue-600"
+              }`}
+            ></div>
+            <div
+              className={`w-4 h-4 rounded-full animate-bounce delay-100 ${
+                darkMode ? "bg-blue-400" : "bg-blue-600"
+              }`}
+            ></div>
+            <div
+              className={`w-4 h-4 rounded-full animate-bounce delay-200 ${
+                darkMode ? "bg-blue-400" : "bg-blue-600"
+              }`}
+            ></div>
           </div>
-          <p className="mt-3 text-gray-600">Processing document...</p>
+          <p className={`mt-3 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+            Processing document...
+          </p>
         </div>
       ) : (
         <div className="flex flex-col md:flex-row gap-4">
           {/* Document Display */}
           <div className="flex-1">
-            <p className="mb-2 text-sm text-gray-600">
+            <p
+              className={`mb-2 text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
               {error
                 ? "Upload a different file to generate questions"
                 : "Select text from your document to generate questions:"}
             </p>
 
             <div
-              className={`p-4 border rounded ${
-                error ? "bg-gray-100 text-gray-500" : "bg-gray-50 cursor-text"
-              } max-h-96 overflow-y-auto`}
+              className={`p-4 border rounded max-h-96 overflow-y-auto ${
+                error
+                  ? darkMode
+                    ? "bg-gray-700/50 text-gray-400"
+                    : "bg-gray-100 text-gray-500"
+                  : darkMode
+                  ? "bg-gray-700/50 text-gray-200 cursor-text"
+                  : "bg-gray-50 cursor-text"
+              }`}
               onMouseUp={handleTextSelection}
             >
-              <pre className="whitespace-pre-wrap font-sans text-sm">
+              <pre
+                className={`whitespace-pre-wrap font-sans text-sm ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
                 {error
                   ? "No text available from the uploaded document"
                   : documentText || "Document content will appear here"}
@@ -255,14 +296,34 @@ export default function DocumentViewer({ file, fileContent, onTextSelected }) {
 
           {/* Selected Text Display */}
           <div className="flex-1 md:border-l md:pl-4">
-            <p className="mb-2 text-sm text-gray-600">Selected Text:</p>
-            <div className="p-4 border rounded bg-blue-50 border-blue-200 max-h-96 overflow-y-auto">
+            <p
+              className={`mb-2 text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Selected Text:
+            </p>
+            <div
+              className={`p-4 border rounded max-h-96 overflow-y-auto ${
+                darkMode
+                  ? "bg-blue-900/30 border-blue-700"
+                  : "bg-blue-50 border-blue-200"
+              }`}
+            >
               {selectedText ? (
-                <pre className="text-sm font-sans whitespace-pre-wrap">
+                <pre
+                  className={`text-sm font-sans whitespace-pre-wrap ${
+                    darkMode ? "text-blue-100" : "text-blue-800"
+                  }`}
+                >
                   {selectedText}
                 </pre>
               ) : (
-                <p className="text-sm text-gray-500 italic">
+                <p
+                  className={`text-sm italic ${
+                    darkMode ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
                   No text selected yet. Select text from the document to see it
                   here.
                 </p>

@@ -6,29 +6,32 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import AppHeader from "../components/AppHeader";
-import { LogOut, BrainCircuit, BookOpen, Clock, Calendar } from "lucide-react";
+import { LogOut, Home, Brain, Zap, BookOpen, Calendar } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Confetti from "react-confetti";
+import AppFooter from "../components/AppFooter";
 
 const navItems = [
   { name: "Dashboard", path: "/home/dashboard" },
   { name: "Focus", path: "/home/focus" },
-  { name: "Energize ", path: "/home/energize" },
+  { name: "Energize", path: "/home/energize" },
   { name: "Study", path: "/home/study" },
   { name: "Activities", path: "/home/activities" },
+  { name: "SignOut", path: "/login" },
 ];
 
 const navIcons = {
-  Dashboard: <BrainCircuit className="w-5 h-5" />,
-  "Study Plan": <BookOpen className="w-5 h-5" />,
-  "Study Sessions": <Clock className="w-5 h-5" />,
+  Dashboard: <Home className="w-5 h-5" />,
+  Focus: <Brain className="w-5 h-5" />,
+  Energize: <Zap className="w-5 h-5" />,
+  Study: <BookOpen className="w-5 h-5" />,
   Activities: <Calendar className="w-5 h-5" />,
   SignOut: <LogOut className="w-5 h-5" />,
 };
 
 export default function DashboardLayout({ children }) {
-  const { user, signOutUser } = useAuth();
+  const { user, isLoading, signOutUser } = useAuth();
   const [coins, setCoins] = useState(250);
   const [health, setHealth] = useState(80);
   const [streak, setStreak] = useState(3);
@@ -107,10 +110,10 @@ export default function DashboardLayout({ children }) {
 
   // Log out
   useEffect(() => {
-    if (!user && mounted) {
+    if (!isLoading && !user && mounted) {
       router.push("/login");
     }
-  }, [user, router, mounted]);
+  }, [user, router, isLoading, mounted]);
 
   const handleSignOut = () => {
     const today = new Date().toDateString();
@@ -168,15 +171,16 @@ export default function DashboardLayout({ children }) {
               <span className="text-xs mt-1">{item.name}</span>
             </Link>
           ))}
-          <button
+          {/* <button
             onClick={handleSignOut}
             className={`flex flex-col items-center justify-center py-3 px-2 w-full transition-colors text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-300`}
           >
             <div className="w-6 h-6">{navIcons.SignOut}</div>
             <span className="text-xs mt-1">Sign Out</span>
-          </button>
+          </button> */}
         </div>
       </nav>
+      <AppFooter />
     </div>
   );
 }
