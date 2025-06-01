@@ -54,19 +54,24 @@ export default function AppHeader({
   return (
     <>
       {/* Header */}
-      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm sticky top-0 z-10">
+      <header className="bg-[hsl(var(--background))] shadow-sm sticky top-0 z-10">
         <div className="container mx-auto">
           {/* Desktop Header */}
           <div className="hidden md:flex justify-between items-center p-4">
             <div className="flex items-center gap-4">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
                 <BrainCircuit className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+                <h1
+                  className="text-2xl font-bold bg-gradient-to-r 
+              from-[hsl(var(--gradient-from))] 
+              to-[hsl(var(--gradient-to))]
+              bg-clip-text text-transparent"
+                >
                   Smata
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-[hsl(var(--timestamp-color))]">
                   {currentTime} · {currentDate}
                 </p>
               </div>
@@ -74,19 +79,25 @@ export default function AppHeader({
 
             {/* Game Stats */}
             <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-2 bg-[hsl(var(--secondary))] dark:bg-[hsl(var(--secondary))] px-3 py-1 rounded-full">
                 <Coins className="w-5 h-5 text-yellow-500" />
-                <span className="font-medium">{coins}</span>
+                <span className="font-medium text-[hsl(var(--foreground))]">
+                  {coins}
+                </span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-2 bg-[hsl(var(--secondary))] dark:bg-[hsl(var(--secondary))] px-3 py-1 rounded-full">
                 <Heart className="w-5 h-5 text-red-500" />
-                <span className="font-medium">{health}/100</span>
+                <span className="font-medium text-[hsl(var(--foreground))]">
+                  {health}/100
+                </span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-2 bg-[hsl(var(--secondary))] dark:bg-[hsl(var(--secondary))] px-3 py-1 rounded-full">
                 <Flame className="w-5 h-5 text-orange-500" />
-                <span className="font-medium">{streak} day streak</span>
+                <span className="font-medium text-[hsl(var(--foreground))]">
+                  {streak} day streak
+                </span>
               </div>
 
               {/* Theme Toggle */}
@@ -120,7 +131,7 @@ export default function AppHeader({
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="hidden md:flex items-center gap-1 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-full transition-all duration-200"
+                  className="hidden md:flex items-center gap-1 px-4 py-2 font-medium text-sm text-[hsl(var(--foreground))] hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-full transition-all duration-200"
                 >
                   Sign Out
                   <LogOut className="w-4 h-4" />
@@ -138,7 +149,7 @@ export default function AppHeader({
                   href={item.path}
                   className={`flex-1 text-center px-4 py-3 text-sm font-medium transition-all duration-200 ${
                     pathname === item.path
-                      ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400 bg-purple-50/50 dark:bg-purple-900/20"
+                      ? "text-[hsl(var(--nav-foreground))] border-b-2 border-[hsl(var(--nav-foreground))] bg-purple-50/50 dark:bg-purple-900/20"
                       : "text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-300 hover:bg-purple-50/30 dark:hover:bg-purple-900/10"
                   }`}
                 >
@@ -151,17 +162,23 @@ export default function AppHeader({
       </header>
 
       {/* Mobile Header */}
-      <header className="md:hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-4 sticky top-0 z-10">
+      <header className="md:hidden bg-[hsl(var(--background))] backdrop-blur-md p-4 sticky top-0 z-10">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
               <BrainCircuit className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+              <h1
+                className="text-lg font-bold 
+              bg-gradient-to-r 
+              from-[hsl(var(--gradient-from))] 
+              to-[hsl(var(--gradient-to))]
+              bg-clip-text text-transparent"
+              >
                 Smata
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-[hsl(var(--timestamp-color))]">
                 {currentTime} ·{" "}
                 {now.toLocaleDateString([], { month: "short", day: "numeric" })}
               </p>
@@ -179,7 +196,7 @@ export default function AppHeader({
                 <Moon className="w-4 h-4" />
               )}
             </button>
-            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+            <div className="flex items-center gap-1 bg-[hsl(var(--secondary))] px-2 py-1 rounded-full">
               <Coins className="w-4 h-4 text-yellow-500" />
               <span className="text-xs font-medium">{coins}</span>
             </div>

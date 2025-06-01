@@ -10,7 +10,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push(user ? "/dashboard" : "/login");
+      router.push(user ? "/home/dashboard" : "/login");
     }, 10000); // Changed from 240000 to 15000 (15 seconds)
     return () => clearTimeout(timer);
   }, [user, router]);

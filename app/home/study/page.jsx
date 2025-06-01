@@ -482,7 +482,10 @@ const StudySection = () => {
         <div
           className={`${
             darkMode ? "bg-indigo-800" : "bg-indigo-600"
-          } text-white rounded-xl p-6 mb-8 shadow-lg transform hover:scale-[1.01] transition-transform duration-300 ${
+          } text-white rounded-xl p-6 m-auto mb-8 sm:w-[90vw]   // Slightly narrower on tablet
+          md:w-[70vw]   // Narrower on small desktop
+          lg:w-[50vw]   // Much narrower on desktop
+          xl:w-[75vw]   // Very compact on large screens  // Wider on mobile (90% of viewport width)shadow-lg transform hover:scale-[1.01] transition-transform duration-300 ${
             darkMode ? "hover:bg-indigo-900" : "hover:bg-indigo-700"
           } active:scale-[0.99]`}
         >
@@ -499,12 +502,15 @@ const StudySection = () => {
       <div
         className={`${
           darkMode ? "bg-gray-800" : "bg-white"
-        } rounded-xl p-4 mb-8 shadow-md overflow-hidden w-full      // Wider on mobile (90% of viewport width)
+        } rounded-xl p-4 m-auto mb-8 shadow-md overflow-hidden    sm:w-[90vw]   // Slightly narrower on tablet
+        md:w-[70vw]   // Narrower on small desktop
+        lg:w-[50vw]   // Much narrower on desktop
+        xl:w-[75vw]   // Very compact on large screens  // Wider on mobile (90% of viewport width)
         `}
       >
         <div
           className={`text-lg font-semibold ${
-            darkMode ? "text-indigo-400" : "text-indigo-700"
+            darkMode ? "text-white" : "text-indigo-700"
           } mb-2`}
         >
           Popular Courses:
@@ -515,7 +521,7 @@ const StudySection = () => {
               <span
                 key={index}
                 className={`mx-4 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
+                  darkMode ? "text-white" : "text-gray-700"
                 } inline-block`}
               >
                 {course} •
@@ -625,7 +631,7 @@ const StudySection = () => {
    sm:w-[90vw]   // Slightly narrower on tablet
    md:w-[70vw]   // Narrower on small desktop
    lg:w-[50vw]   // Much narrower on desktop
-   xl:w-[40vw]   // Very compact on large screens
+   xl:w-[75vw]   // Very compact on large screens
   `}
       >
         {/* Progress Steps */}

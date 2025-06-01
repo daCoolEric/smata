@@ -1,128 +1,142 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 220 15% 30%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --nav-foreground: 275 96% 52%;
+    --gradient-from: 265 84% 58%;
+    --gradient-to: 213 90% 60%;
+    --timestamp-color: 220 5% 50%;
+    --nav-mobile-bg: 0 0% 100%; /* White background */
+    --nav-mobile-bg-opacity: 1; /* 95% opacity */
+    --nav-mobile-border: 214.3 31.8% 91.4%; /* Light gray border */
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Add these if not already present */
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --nav-foreground: 210 40% 98%;
+    --gradient-from: 265 84% 58%;
+    --gradient-to: 213 90% 60%;
+    --timestamp-color: 210 20% 85%;
+    --nav-mobile-bg: 210 40% 98%; /* Dark blue background */
+    --nav-mobile-bg-opacity: 1;
+    --nav-mobile-border: 217.2 32.6% 17.5%; /* Dark gray border */
   }
-  50% {
-    transform: scale(1.05);
+
+  /* Add these if not already present */
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
   }
-}
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
-  to {
-    opacity: 1;
+
+  @keyframes progress {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
   }
-}
 
-@keyframes progress {
-  from {
-    width: 0%;
+  .animate-pulse {
+    animation: pulse 2s infinite;
   }
-  to {
-    width: 100%;
+
+  .animate-fade-in {
+    animation: fade-in 1s ease-out;
   }
-}
 
-.animate-pulse {
-  animation: pulse 2s infinite;
-}
-
-.animate-fade-in {
-  animation: fade-in 1s ease-out;
-}
-
-.animate-progress {
-  animation: progress 10s linear forwards;
-}
-
-.perspective {
-  transform-style: preserve-3d;
-  perspective: 1000px;
-  transform: rotateX(10deg);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
+  .animate-progress {
+    animation: progress 10s linear forwards;
   }
-  100% {
-    transform: translateX(-50%);
+
+  .perspective {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transform: rotateX(10deg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   }
-}
 
-.animate-marquee {
-  animation: marquee 20s linear infinite;
-}
-
-/* For Webkit browsers like Chrome, Safari */
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: #4f46e5;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  background: #4338ca;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
   }
-  100% {
-    transform: translateX(100%);
-  }
-}
 
-@keyframes progress-stripes {
-  0% {
-    background-position: 0 0;
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
   }
-  100% {
-    background-position: 30px 0;
+
+  /* For Webkit browsers like Chrome, Safari */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #4f46e5;
+    cursor: pointer;
+    border-radius: 50%;
   }
-}
 
-.animate-shimmer {
-  animation: shimmer 3s infinite linear;
-}
+  input[type="range"]::-webkit-slider-thumb:hover {
+    background: #4338ca;
+  }
 
-.animate-progress-stripes {
-  animation: progress-stripes 2s infinite linear;
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes progress-stripes {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 30px 0;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s infinite linear;
+  }
+
+  .animate-progress-stripes {
+    animation: progress-stripes 2s infinite linear;
+  }
 }
