@@ -97,22 +97,19 @@ const SpinWheel = () => {
     setRotation(newRotation);
 
     setTimeout(() => {
-      // Calculate which segment the pointer (at top, 270°) lands on
       const segmentAngle = 360 / activities.length;
 
-      // Normalize the rotation to 0-360 range
-      const normalizedRotation = ((newRotation % 360) + 360) % 360;
+      // Get the final rotation normalized to 0-360
+      const normalizedRotation = newRotation % 360;
 
-      // The pointer is at the top (270° in standard coordinates)
-      // We need to find which segment is under the pointer
-      // Since segments are drawn starting from top (270°) going clockwise,
-      // we calculate the relative position
-      const pointerAngle = 270; // Top position
-      const relativeAngle = (pointerAngle - normalizedRotation + 360) % 360;
+      // The pointer is at the top (0°), segments start at top and go clockwise
+      // We need to find which segment the pointer is pointing to
+      // Since the wheel rotates, we need to reverse the rotation to find the original position
+      const pointerAngle = (360 - normalizedRotation) % 360;
 
-      // Find which segment this angle falls into
+      // Calculate which segment the pointer is in
       const selectedIndex =
-        Math.floor(relativeAngle / segmentAngle) % activities.length;
+        Math.floor(pointerAngle / segmentAngle) % activities.length;
 
       setSelectedActivity(activities[selectedIndex]);
       setIsSpinning(false);
@@ -143,7 +140,7 @@ const SpinWheel = () => {
     const radius = 180;
 
     activities.forEach((activity, index) => {
-      // Start from top (270° in standard coordinates) and go clockwise
+      // Start from top (270° in SVG coordinates, which is 0° in our logical system) and go clockwise
       const startAngle = 270 + index * segmentAngle;
       const endAngle = 270 + (index + 1) * segmentAngle;
 
@@ -174,7 +171,12 @@ const SpinWheel = () => {
       const textY = centerY + textRadius * Math.sin((midAngle * Math.PI) / 180);
 
       // Calculate rotation for text to be readable
-      const textRotation = midAngle + 90;
+      let textRotation = midAngle + 90;
+
+      // Flip text if it would be upside down
+      if (textRotation > 90 && textRotation < 270) {
+        textRotation += 180;
+      }
 
       segments.push(
         <g key={activity.id}>
