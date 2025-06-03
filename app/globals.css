@@ -3,6 +3,7 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
+    --main-bg: 0 0% 100%;
     --foreground: 220 15% 30%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
@@ -17,10 +18,14 @@
     --nav-mobile-bg: 0 0% 100%; /* White background */
     --nav-mobile-bg-opacity: 1; /* 95% opacity */
     --nav-mobile-border: 214.3 31.8% 91.4%; /* Light gray border */
+    --card-background: 0 0% 100%; /* white in hsl */
+    --card-border: 214.3 31.8% 91.4%;
+    --progress-bar-bg: 220 13% 91%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 220 40% 15%;
+    --main-bg: 220 43% 11%;
     --foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
@@ -36,6 +41,9 @@
     --nav-mobile-bg: 210 40% 98%; /* Dark blue background */
     --nav-mobile-bg-opacity: 1;
     --nav-mobile-border: 217.2 32.6% 17.5%; /* Dark gray border */
+    --card-background: 216 31% 17%; /* gray-900 in hsl */
+    --card-border: 217.2 32.6% 17.5%;
+    --progress-bar-bg: 217 21% 27%;
   }
 
   /* Add these if not already present */

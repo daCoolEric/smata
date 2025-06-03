@@ -5,6 +5,7 @@ import { Play, Trophy, Star, Zap, Heart, Brain } from "lucide-react";
 
 const SpinWheel = () => {
   const [isSpinning, setIsSpinning] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -80,9 +81,10 @@ const SpinWheel = () => {
   ];
 
   const spinWheel = () => {
-    if (isSpinning) return;
+    if (isSpinning || hasSpun) return;
 
     setIsSpinning(true);
+    setHasSpun(true);
     setSelectedActivity(null);
 
     // Calculate random spins (5-8 full rotations plus random position)
@@ -237,9 +239,9 @@ const SpinWheel = () => {
 
       <div className="relative mb-8">
         <div className="relative w-96 h-96">
-          {/* Fixed Pointer at top */}
-          <div className="absolute top-1 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
-            <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-yellow-400 drop-shadow-lg"></div>
+          {/* Pointer positioned BELOW navbar */}
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-[5] pointer-events-none">
+            <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg"></div>
           </div>
 
           {/* Spinning Wheel */}
@@ -286,24 +288,22 @@ const SpinWheel = () => {
             </svg>
           </div>
         </div>
-
-        {selectedActivity && !isSpinning && (
-          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
-            Final rotation: {(rotation % 360).toFixed(1)}°
-          </div>
-        )}
       </div>
 
       <button
         onClick={spinWheel}
-        disabled={isSpinning}
+        disabled={isSpinning || hasSpun}
         className={`px-8 py-4 text-xl font-bold rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg ${
-          isSpinning
+          isSpinning || hasSpun
             ? "bg-gray-600 text-gray-400 cursor-not-allowed"
             : "bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 active:scale-95"
         }`}
       >
-        {isSpinning ? "Spinning..." : "SPIN THE WHEEL!"}
+        {isSpinning
+          ? "Spinning..."
+          : hasSpun
+          ? "Already Spun!"
+          : "SPIN THE WHEEL!"}
       </button>
 
       {selectedActivity && !isSpinning && (

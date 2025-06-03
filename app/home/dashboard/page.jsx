@@ -1,6 +1,7 @@
 // app/dashboard/page.jsx
 "use client";
 import { useAuth } from "@/context/AuthContext";
+
 import {
   Clock,
   Calendar,
@@ -25,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Confetti from "react-confetti";
+import { useTheme } from "next-themes";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Today");
@@ -37,18 +39,10 @@ export default function Dashboard() {
   const [mockExams, setMockExams] = useState([]);
   const [recentNotes, setRecentNotes] = useState([]);
   const [studyGroups, setStudyGroups] = useState([]);
-  const [darkMode, setDarkMode] = useState(false);
 
   const { user, loading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
-
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("darkMode", !darkMode);
-    }
-  };
 
   // Redirect if not authenticated (after loading completes)
   useEffect(() => {
@@ -57,36 +51,18 @@ export default function Dashboard() {
     }
   }, [user, loading, router]);
 
-  // Initialize dark mode from localStorage
+  // Initialize from localStorage
   useEffect(() => {
     setMounted(true);
-    const savedDarkMode = localStorage.getItem("darkMode") === "true";
-    setDarkMode(savedDarkMode);
 
-    // Load game stats from localStorage
+    // Load game stats
     const savedState = JSON.parse(localStorage.getItem("smataGameState")) || {};
     setCoins(savedState.coins || 250);
     setHealth(savedState.health || 80);
     setStreak(savedState.streak || 3);
     setCompletedSessions(savedState.completedSessions || 0);
-  }, []);
 
-  // Save game state when it changes
-  useEffect(() => {
-    if (!mounted) return;
-
-    localStorage.setItem(
-      "smataGameState",
-      JSON.stringify({
-        coins,
-        health,
-        streak,
-        completedSessions,
-      })
-    );
-  }, [coins, health, streak, completedSessions, mounted]);
-
-  useEffect(() => {
+    // Load other data
     const savedExams = JSON.parse(localStorage.getItem("smataExams")) || [
       {
         id: 1,
@@ -104,38 +80,41 @@ export default function Dashboard() {
     setStudyGroups(savedGroups);
   }, []);
 
-  // Don't forget to save when data changes
+  // Save game state when it changes
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("smataExams", JSON.stringify(mockExams));
-    }
+    if (!mounted) return;
+    localStorage.setItem(
+      "smataGameState",
+      JSON.stringify({ coins, health, streak, completedSessions })
+    );
+  }, [coins, health, streak, completedSessions, mounted]);
+
+  // Save other data when changed
+  useEffect(() => {
+    if (mounted) localStorage.setItem("smataExams", JSON.stringify(mockExams));
   }, [mockExams, mounted]);
 
   useEffect(() => {
-    if (mounted) {
+    if (mounted)
       localStorage.setItem("smataNotes", JSON.stringify(recentNotes));
-    }
   }, [recentNotes, mounted]);
 
   useEffect(() => {
-    if (mounted) {
+    if (mounted)
       localStorage.setItem("smataGroups", JSON.stringify(studyGroups));
-    }
   }, [studyGroups, mounted]);
 
   const now = new Date();
 
   // Prevent rendering until after client-side hydration
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   // Show loading state
   if (loading) {
     return (
       <div
         className={`min-h-screen flex items-center justify-center ${
-          darkMode ? "bg-gray-900" : "bg-white"
+          theme === "dark" ? "bg-gray-900" : "bg-white"
         }`}
       >
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -143,50 +122,44 @@ export default function Dashboard() {
     );
   }
 
-  // Don't render if not authenticated (redirect will happen)
-  if (!user) {
-    return null;
-  }
+  // Don't render if not authenticated
+  if (!user) return null;
 
   return (
-    <div
-      className={`${
-        darkMode ? "dark bg-gray-900" : "bg-gray-50"
-      } min-h-screen p-4 md:p-6`}
-    >
+    <div className={"bg-[hsl(var(--main-bg))] min-h-screen p-4 md:p-6"}>
       {showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
 
-      {/* Theme Toggle Button */}
+      {/* Theme Toggle Button
       <div className="flex justify-end mb-4">
         <button
-          onClick={toggleDarkMode}
+          onClick={toggleTheme}
           className={`p-2 rounded-full ${
-            darkMode
+            theme === "dark"
               ? "bg-gray-700 text-yellow-300"
               : "bg-gray-200 text-gray-700"
           }`}
-          aria-label="Toggle dark mode"
+          aria-label="Toggle theme"
         >
-          {darkMode ? (
+          {theme === "dark" ? (
             <Sun className="h-5 w-5" />
           ) : (
             <MoonIcon className="h-5 w-5" />
           )}
         </button>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
         {/* Left Column */}
         <div className="md:col-span-2 space-y-6">
           {/* Greeting Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100/50 dark:border-gray-700/30 hover:shadow-md transition-shadow duration-300 relative overflow-hidden">
+          <div className="bg-[hsl(var(--card-background))] rounded-2xl p-6 shadow-sm border border-[hsl(var(--card-border))] hover:shadow-md transition-shadow duration-300 relative overflow-hidden">
             {completedSessions >= 3 && (
               <div className="absolute top-4 right-4 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                 <Trophy className="w-3 h-3" /> Daily Goal Achieved!
               </div>
             )}
 
-            <h2 className="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">
+            <h2 className="text-2xl font-semibold mb-2 text-[hsl(var(--foreground))]">
               Good{" "}
               {now.getHours() < 12
                 ? "Morning"
@@ -196,14 +169,14 @@ export default function Dashboard() {
               {user?.displayName ? `, ${user.displayName}` : ""}.
             </h2>
 
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-4">
+            <div className="w-full bg-[hsl(var(--progress-bar-bg))] rounded-full h-2.5 mb-4">
               <div
                 className="bg-gradient-to-r from-purple-500 to-blue-500 h-2.5 rounded-full"
                 style={{ width: `${Math.min(completedSessions * 33, 100)}%` }}
               ></div>
             </div>
 
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-[hsl(var(--timestamp-color))] mb-4">
               {completedSessions >= 3
                 ? "🔥 You've completed your daily goal! +25 coins"
                 : `Complete ${3 - completedSessions} tasks to earn bonus coins`}
@@ -322,7 +295,6 @@ export default function Dashboard() {
                 </span>
               </button>
             </div>
-            
           </div>
 
           {/* Activities */}
@@ -564,6 +536,7 @@ export default function Dashboard() {
               Claim {streak * 10} coins
             </button>
           </div>
+
           {/* Stats Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100/50 dark:border-gray-700/30 hover:shadow-md transition-shadow duration-300">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 dark:text-white">

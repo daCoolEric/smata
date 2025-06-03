@@ -123,7 +123,9 @@ export default function DashboardLayout({ children }) {
       />
 
       {/* Main Content */}
-      <main className="container mx-auto p-4 md:p-6">{children}</main>
+      <main className="container bg-[hsl(var(--main-bg))]  mx-auto p-4 md:p-6">
+        {children}
+      </main>
 
       {/* Mobile Navigation */}
       <nav
