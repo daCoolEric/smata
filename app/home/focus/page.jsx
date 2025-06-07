@@ -1,147 +1,131 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Howl } from "howler";
+import BreathingExercise from "../../components/focus/BreathingExercise";
+import StroopTest from "../../components/focus/ColorMatch";
+import WordRecall from "@/app/components/focus/WordRecall";
+import NumberSequence from "@/app/components/focus/NumberSequence";
+import FocusTunnel from "@/app/components/focus/FocusFunnel";
+import SoundFocus from "@/app/components/focus/SoundFocus";
 
-export default function DistractionDodge() {
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [distraction, setDistraction] = useState(null);
-  const [gameHistory, setGameHistory] = useState([]);
+const tools = [
+  {
+    id: 1,
+    name: "Breathing Exercise",
+    component: <BreathingExercise />,
+    color: "bg-blue-100",
+  },
+  {
+    id: 2,
+    name: "Sound Focus",
+    component: <SoundFocus />,
+    color: "bg-purple-100",
+  },
+  {
+    id: 3,
+    name: "Color Match",
+    component: <StroopTest />,
+    color: "bg-green-100",
+  },
+  {
+    id: 4,
+    name: "Word Recall",
+    component: <WordRecall />,
+    color: "bg-yellow-100",
+  },
+  {
+    id: 5,
+    name: "Number Sequence",
+    component: <NumberSequence />,
+    color: "bg-red-100",
+  },
+  {
+    id: 6,
+    name: "Focus Tunnel",
+    component: <FocusTunnel />,
+    color: "bg-indigo-100",
+  },
+];
 
-  // Initialize sounds
-  const sounds = {
-    pop: new Howl({ src: ["/sounds/pop.mp3"] }),
-    ding: new Howl({ src: ["/sounds/ding.mp3"] }),
-    buzz: new Howl({ src: ["/sounds/buzz.mp3"] }),
-  };
+export default function MeditationSection() {
+  const [selectedTool, setSelectedTool] = useState(null);
+  const [randomizedTools, setRandomizedTools] = useState([]);
 
-  // Game loop
   useEffect(() => {
-    let timer;
-    if (isPlaying && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+    // Shuffle tools on initial load
+    setRandomizedTools([...tools].sort(() => 0.5 - Math.random()));
+  }, []);
 
-        // Trigger random distraction
-        if (Math.random() > 0.7) {
-          triggerDistraction();
-        }
-      }, 1000);
-    }
-
-    return () => clearInterval(timer);
-  }, [isPlaying, timeLeft]);
-
-  const startGame = () => {
-    setScore(0);
-    setTimeLeft(60);
-    setIsPlaying(true);
-    setGameHistory([]);
+  const handleToolSelect = (tool) => {
+    setSelectedTool(tool);
   };
 
-  const triggerDistraction = () => {
-    const distractions = [
-      { emoji: "🔔", sound: "pop" },
-      { emoji: "💬", sound: "pop" },
-      { emoji: "⚠️", sound: "buzz" },
-      { emoji: "🎉", sound: "pop" },
-    ];
-
-    const randomDistraction =
-      distractions[Math.floor(Math.random() * distractions.length)];
-    setDistraction(randomDistraction.emoji);
-    sounds[randomDistraction.sound].play();
-
-    setTimeout(() => {
-      setDistraction(null);
-    }, 1500);
-  };
-
-  const handleFocusClick = () => {
-    setScore((prev) => prev + 10);
-    sounds.ding.play();
-  };
-
-  const handleDistractionClick = () => {
-    setScore((prev) => prev - 5);
-    sounds.buzz.play();
-    setDistraction(null);
-    setGameHistory((prev) => [...prev, "Clicked distraction"]);
-  };
-
-  const endGame = () => {
-    setIsPlaying(false);
-    setGameHistory((prev) => [...prev, `Game ended with ${score} points`]);
+  const resetSelection = () => {
+    setSelectedTool(null);
+    // Re-shuffle tools when going back
+    setRandomizedTools([...tools].sort(() => 0.5 - Math.random()));
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h1 className="text-4xl font-bold mb-8">Distraction Dodge</h1>
+    <div className="min-h-screen py-12 px-4 max-w-6xl mx-auto">
+      <h1 className="text-4xl font-bold text-center mb-12 text-gray-800">
+        Mindful Study Tools
+      </h1>
 
-      {!isPlaying ? (
-        <button
-          onClick={startGame}
-          className="bg-green-500 text-white px-6 py-3 rounded-lg text-xl hover:bg-green-600 transition"
-        >
-          Start Game
-        </button>
-      ) : (
-        <div className="text-center">
-          <div className="mb-8">
-            <p className="text-2xl">
-              Score: <span className="font-bold">{score}</span>
-            </p>
-            <p className="text-xl">
-              Time: <span className="font-bold">{timeLeft}s</span>
-            </p>
-          </div>
-
-          {/* Focus Target */}
-          <div
-            onClick={handleFocusClick}
-            className="w-32 h-32 bg-blue-500 rounded-lg mx-auto mb-8 cursor-pointer hover:bg-blue-600 transition flex items-center justify-center"
-          >
-            <span className="text-white text-2xl">Click Me</span>
-          </div>
-
-          {/* Distractions */}
-          {distraction && (
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              onClick={handleDistractionClick}
-              className="fixed text-5xl cursor-pointer select-none z-10"
-              style={{
-                top: `${Math.random() * 70 + 15}%`,
-                left: `${Math.random() * 70 + 15}%`,
-              }}
+      {selectedTool ? (
+        <div className="space-y-8">
+          <div className="flex justify-between items-center mb-6">
+            <button
+              onClick={resetSelection}
+              className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
             >
-              {distraction}
-            </motion.div>
-          )}
-
-          <button
-            onClick={endGame}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-red-600 transition"
-          >
-            End Game
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Back to all tools
+            </button>
+            <h2 className="text-2xl font-semibold text-gray-700">
+              {selectedTool.name}
+            </h2>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            {selectedTool.component}
+          </div>
         </div>
-      )}
-
-      {/* Game History */}
-      {gameHistory.length > 0 && (
-        <div className="mt-8 w-full max-w-md">
-          <h2 className="text-xl font-semibold mb-2">Game History</h2>
-          <ul className="bg-white p-4 rounded-lg shadow">
-            {gameHistory.map((item, index) => (
-              <li key={index} className="py-1 border-b last:border-0">
-                {item}
-              </li>
-            ))}
-          </ul>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {randomizedTools.map((tool) => (
+            <div
+              key={tool.id}
+              onClick={() => handleToolSelect(tool)}
+              className={`${tool.color} rounded-xl shadow-md overflow-hidden transition-all transform hover:scale-105 hover:shadow-lg cursor-pointer`}
+            >
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {tool.name}
+                </h3>
+                <p className="text-gray-600">
+                  Click to start this mindful exercise
+                </p>
+              </div>
+              <div className="h-40 flex items-center justify-center bg-white bg-opacity-50">
+                <div className="text-4xl text-gray-600 opacity-30">
+                  {tool.name
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
