@@ -2,8 +2,8 @@
 import AuthTransition from "@/components/auth/AuthTransition";
 import AuthCard from "@/components/auth/AuthCard";
 import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
 import Link from "next/link";
+import Button from "@/app/components/ui/Button";
 
 export default function ForgotPasswordPage() {
   const handleSubmit = (e) => {

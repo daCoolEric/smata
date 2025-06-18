@@ -1,9 +1,10 @@
 "use client";
-import AuthTransition from "@/components/auth/AuthTransition";
+
 import AuthCard from "@/components/auth/AuthCard";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
+import AuthTransition from "@/app/components/auth/AuthTransition";
 
 export default function ResetPasswordPage() {
   const handleSubmit = (e) => {
