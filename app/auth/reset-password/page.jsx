@@ -1,8 +1,8 @@
 "use client";
 
-import AuthCard from "@/components/auth/AuthCard";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import AuthCard from "@/app/components/auth/AuthCard";
+import Input from "@/app/components/ui/Input";
+import Button from "@/app/components/ui/Button";
 import Link from "next/link";
 import AuthTransition from "@/app/components/auth/AuthTransition";
 
