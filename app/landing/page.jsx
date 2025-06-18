@@ -38,7 +38,7 @@ export default function LandingPage() {
           </span>
         </div>
         <button
-          onClick={() => router.push("/login")}
+          onClick={() => router.push("/auth/login")}
           className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg transition-all"
         >
           Get Started
@@ -61,7 +61,7 @@ export default function LandingPage() {
           </p>
           <div className="flex justify-center gap-4">
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/auth/login")}
               className="px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg transition-all flex items-center gap-2"
             >
               Start Free Today
@@ -134,7 +134,7 @@ export default function LandingPage() {
             Join thousands of students who are achieving more with less effort
           </p>
           <button
-            onClick={() => router.push("/login")}
+            onClick={() => router.push("/auth/login")}
             className="px-8 py-3 rounded-full bg-white text-blue-600 hover:bg-gray-100 transition-all font-medium flex items-center gap-2 mx-auto"
           >
             Get Started Free

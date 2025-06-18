@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     if (!isLoading && !user && mounted) {
-      router.push("/login");
+      router.push("/auth/login");
     }
   }, [user, router, isLoading, mounted]);
 
@@ -99,7 +99,7 @@ export default function DashboardLayout({ children }) {
       }
 
       await signOutUser();
-      router.push("/login");
+      router.push("/auth/login");
     } catch (error) {
       console.error("Error signing out:", error);
     }

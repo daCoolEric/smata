@@ -15,7 +15,7 @@ import {
   BookOpen,
   Calendar,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -35,7 +35,8 @@ export default function AppHeader({
   toggleTheme,
   handleSignOut,
 }) {
-  const { user } = useAuth();
+  const { user, signOutUser } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
   const now = new Date();
 
@@ -50,6 +51,24 @@ export default function AppHeader({
     day: "numeric",
     year: "numeric",
   });
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth/login");
+    }
+  }, [user, router]);
+
+  const handleSignOutUser = async () => {
+    // setIsSigningIn(true);
+    try {
+      await signOutUser();
+    } catch (error) {
+      console.error("Sign in error:", error);
+    } finally {
+      // setIsSigningIn(false);
+      null;
+    }
+  };
 
   return (
     <>
@@ -130,7 +149,7 @@ export default function AppHeader({
                   </div>
                 )}
                 <button
-                  onClick={handleSignOut}
+                  onClick={handleSignOutUser}
                   className="hidden md:flex items-center gap-1 px-4 py-2 font-medium text-sm text-[hsl(var(--foreground))] hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-full transition-all duration-200"
                 >
                   Sign Out
