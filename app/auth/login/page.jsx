@@ -1,38 +1,68 @@
 "use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import AuthTransition from "@/app/components/auth/AuthTransition";
 import AuthCard from "@/app/components/auth/AuthCard";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/app/config/supabaseConfig";
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, loading } = useAuth();
   const router = useRouter();
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (user && !loading) {
-      router.push("/home/dashboard");
-    }
-  }, [user, loading, router]);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-  const handleSignInWithGoogle = async () => {
-    setIsSigningIn(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
-      await signInWithGoogle();
-    } catch (error) {
-      console.error("Sign in error:", error);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) throw error;
+
+      // Redirect to dashboard after successful login
+      router.push("/home/dashboard");
+    } catch (err) {
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
-      setIsSigningIn(false);
+      setLoading(false);
     }
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle login logic
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message || `${provider} login failed`);
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,11 +71,19 @@ export default function LoginPage() {
         title="Welcome back"
         subtitle="Sign in to continue your learning journey"
       >
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-md">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             label="Email address"
             name="email"
             type="email"
+            value={formData.email}
+            onChange={handleChange}
             autoComplete="email"
             required
             placeholder="your@email.com"
@@ -55,8 +93,11 @@ export default function LoginPage() {
             label="Password"
             name="password"
             type="password"
+            value={formData.password}
+            onChange={handleChange}
             autoComplete="current-password"
             required
+            minLength={6}
             placeholder="••••••••"
           />
 
@@ -64,8 +105,10 @@ export default function LoginPage() {
             <div className="flex items-center">
               <input
                 id="remember-me"
-                name="remember-me"
+                name="rememberMe"
                 type="checkbox"
+                checked={formData.rememberMe}
+                onChange={handleChange}
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label
@@ -87,16 +130,17 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </Button>
           </div>
         </form>
 
         <SocialButtons
-          onGoogle={handleSignInWithGoogle}
-          onApple={() => console.log("Apple login")}
-          onMicrosoft={() => console.log("Microsoft login")}
+          onGoogle={() => handleSocialLogin("google")}
+          onApple={() => handleSocialLogin("apple")}
+          onMicrosoft={() => handleSocialLogin("azure")}
+          loading={loading}
         />
 
         <div className="mt-6 text-center text-sm">

@@ -2,7 +2,34 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"],
-      "@/components/*": ["./components/*"]
+      "@/assets/*": ["./assets/*"],
+      "@/components/*": ["./components/*"],
+      "@/composables/*": ["./composables/*"],
+      "@/layouts/*": ["./layouts/*"],
+      "@/middleware/*": ["./middleware/*"],
+      "@/pages/*": ["./pages/*"],
+      "@/plugins/*": ["./plugins/*"],
+      "@/stores/*": ["./stores/*"],
+      "@/utils/*": ["./utils/*"],
+      "@/types/*": ["./types/*"],
+      "@/public/*": ["./public/*"],
+      "@/config/*": ["./config/*"],
+      "@/services/*": ["./services/*"],
+      "@/directives/*": ["./directives/*"],
+      "@/mixins/*": ["./mixins/*"],
+      "@/filters/*": ["./filters/*"],
+      "@/router/*": ["./router/*"],
+      "@/assets/images/*": ["./assets/images/*"],
+      "@/assets/styles/*": ["./assets/styles/*"],
+      "@/assets/fonts/*": ["./assets/fonts/*"],
+      "@/constants/*": ["./constants/*"],
+      "@/locales/*": ["./locales/*"],
+      "@/helpers/*": ["./helpers/*"],
+      "@/tests/*": ["./tests/*"],
+      "@/vendor/*": ["./vendor/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/api/*": ["./api/*"],
+      "@/store/*": ["./store/*"]
     }
   },
   "exclude": ["node_modules"]

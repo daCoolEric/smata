@@ -27,6 +27,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { useTheme } from "next-themes";
+import { supabase } from "../../config/supabaseConfig";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Today");
@@ -128,6 +129,7 @@ export default function Dashboard() {
   return (
     <div className={"bg-[hsl(var(--main-bg))] min-h-screen p-4 md:p-6"}>
       {showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
+      {console.log(supabase)}
 
       {/* Theme Toggle Button
       <div className="flex justify-end mb-4">
