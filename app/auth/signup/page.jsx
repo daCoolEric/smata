@@ -7,7 +7,9 @@ import AuthCard from "@/app/components/auth/AuthCard";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
-import { supabase } from "@/app/config/supabaseConfig";
+import { getSupabase } from "@/app/config/supabaseConfig";
+
+const supabase = getSupabase();
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";

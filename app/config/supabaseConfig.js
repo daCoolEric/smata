@@ -1,20 +1,30 @@
 // app/config/supabaseClient.js
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+let supabase = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Supabase URL and Anon Key must be provided in environment variables"
-  );
-}
+export const getSupabase = () => {
+  if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-});
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error(
+        "Supabase URL and Anon Key must be provided in environment variables"
+      );
+    }
 
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+      },
+    });
+  }
+
+  return supabase;
+};
+
+// For backward compatibility
+export { getSupabase as supabase };
