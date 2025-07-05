@@ -6,6 +6,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["pdfjs-dist"],
   },
+  serverExternalPackages: ["@supabase/supabase-js"],
 };
 
 module.exports = nextConfig;
