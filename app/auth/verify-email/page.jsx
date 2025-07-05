@@ -1,13 +1,16 @@
 // app/auth/verify-email/page.jsx
 "use client";
-import { useState } from "react";
+
+import { useSearchParams } from "next/navigation";
+
 import AuthTransition from "@/app/components/auth/AuthTransition";
 import AuthCard from "@/app/components/auth/AuthCard";
 import Button from "@/app/components/ui/Button";
 import Link from "next/link";
 
 export default function VerifyEmailPage() {
-  const [status, setStatus] = useState("checking");
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
 
   const getStatusMessage = () => {
     return (
