@@ -9,6 +9,9 @@ import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
 import { supabase } from "@/app/config/supabaseConfig";
 
+// Force dynamic rendering
+export const dynamic = "force-dynamic";
+
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
