@@ -1,88 +1,158 @@
-// app/auth/login/page.js
 "use client";
-
-import { getSupabaseClient } from "@/app/config/supabaseConfig";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import AuthTransition from "@/app/components/auth/AuthTransition";
+import AuthCard from "@/app/components/auth/AuthCard";
+import Input from "@/app/components/ui/Input";
+import Button from "@/app/components/ui/Button";
+import SocialButtons from "@/app/components/auth/SocialButtons";
+import { supabase } from "@/app/config/supabaseConfig";
 
 export default function LoginPage() {
-  const [mounted, setMounted] = useState(false);
-  const [supabase, setSupabase] = useState(null);
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    setMounted(true);
-    const client = getSupabaseClient();
-    setSupabase(client);
-  }, []);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <div>Loading...</div>;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  if (!supabase) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            Configuration Error
-          </h1>
-          <p className="text-gray-600">
-            Unable to connect to authentication service. Please check your
-            configuration.
-          </p>
-        </div>
-      </div>
-    );
-  }
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
-  // Your actual login form component
+      if (error) throw error;
+
+      // Redirect to dashboard after successful login
+      router.push("/home/dashboard");
+    } catch (err) {
+      setError(err.message || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message || `${provider} login failed`);
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6">
-          <div>
-            <label htmlFor="email" className="sr-only">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Email address"
-            />
+    <AuthTransition>
+      <AuthCard
+        title="Welcome back"
+        subtitle="Sign in to continue your learning journey"
+      >
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-md">
+            {error}
           </div>
-          <div>
-            <label htmlFor="password" className="sr-only">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Password"
-            />
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            label="Email address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            autoComplete="email"
+            required
+            placeholder="your@email.com"
+          />
+
+          <Input
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            autoComplete="current-password"
+            required
+            minLength={6}
+            placeholder="••••••••"
+          />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="rememberMe"
+                type="checkbox"
+                checked={formData.rememberMe}
+                onChange={handleChange}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-700"
+              >
+                Remember me
+              </label>
+            </div>
+
+            <div className="text-sm">
+              <Link
+                href="/auth/forgot-password"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </div>
+
           <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Sign in
-            </button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+
+        <SocialButtons
+          onGoogle={() => handleSocialLogin("google")}
+          onApple={() => handleSocialLogin("apple")}
+          onMicrosoft={() => handleSocialLogin("azure")}
+          loading={loading}
+        />
+
+        <div className="mt-6 text-center text-sm">
+          <span className="text-gray-600">Don't have an account? </span>
+          <Link
+            href="/auth/signup"
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Sign up
+          </Link>
+        </div>
+      </AuthCard>
+    </AuthTransition>
   );
 }

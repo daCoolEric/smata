@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthTransition from "@/app/components/auth/AuthTransition";
@@ -7,40 +7,9 @@ import AuthCard from "@/app/components/auth/AuthCard";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
-
-import { getSupabaseClient } from "@/app/config/supabaseConfig";
+import { supabase } from "@/app/config/supabaseConfig";
 
 export default function SignupPage() {
-  const [mounted, setMounted] = useState(false);
-  const [supabase, setSupabase] = useState(null);
-
-  useEffect(() => {
-    setMounted(true);
-    const client = getSupabaseClient();
-    setSupabase(client);
-  }, []);
-
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <div>Loading...</div>;
-  }
-
-  if (!supabase) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            Configuration Error
-          </h1>
-          <p className="text-gray-600">
-            Unable to connect to authentication service. Please check your
-            configuration.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -218,27 +187,6 @@ export default function SignupPage() {
       console.log("Profile will be created via trigger or callback");
     } else {
       console.log("Profile created via RPC");
-    }
-  };
-
-  const handleSocialLogin = async (provider) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      console.error("Social login error:", err);
-      setError(err.message || "Social login failed. Please try again.");
-    } finally {
-      setLoading(false);
     }
   };
 
