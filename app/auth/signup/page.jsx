@@ -7,14 +7,40 @@ import AuthCard from "@/app/components/auth/AuthCard";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
-import { getSupabase } from "@/app/config/supabaseConfig";
 
-const supabase = getSupabase();
-
-// Force dynamic rendering
-export const dynamic = "force-dynamic";
+import { getSupabaseClient } from "@/app/config/supabaseConfig";
+import { useEffect, useState } from "react";
 
 export default function SignupPage() {
+  const [mounted, setMounted] = useState(false);
+  const [supabase, setSupabase] = useState(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const client = getSupabaseClient();
+    setSupabase(client);
+  }, []);
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return <div>Loading...</div>;
+  }
+
+  if (!supabase) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Configuration Error
+          </h1>
+          <p className="text-gray-600">
+            Unable to connect to authentication service. Please check your
+            configuration.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
