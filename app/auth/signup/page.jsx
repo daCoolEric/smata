@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthTransition from "@/app/components/auth/AuthTransition";
@@ -9,7 +9,6 @@ import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
 
 import { getSupabaseClient } from "@/app/config/supabaseConfig";
-import { useEffect, useState } from "react";
 
 export default function SignupPage() {
   const [mounted, setMounted] = useState(false);
@@ -41,6 +40,7 @@ export default function SignupPage() {
       </div>
     );
   }
+
   const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -218,6 +218,27 @@ export default function SignupPage() {
       console.log("Profile will be created via trigger or callback");
     } else {
       console.log("Profile created via RPC");
+    }
+  };
+
+  const handleSocialLogin = async (provider) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Social login error:", err);
+      setError(err.message || "Social login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
