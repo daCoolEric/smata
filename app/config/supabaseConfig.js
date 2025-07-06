@@ -1,36 +1,19 @@
-// app/lib/supabase.js
+// app/config/supabaseClient.js
 import { createClient } from "@supabase/supabase-js";
 
-// Create a singleton instance
-let supabaseInstance = null;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export function getSupabaseClient() {
-  // Don't create client during build time
-  if (typeof window === "undefined" && process.env.NODE_ENV === "production") {
-    return null;
-  }
-
-  if (!supabaseInstance) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error("Missing Supabase environment variables");
-      return null;
-    }
-
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-      },
-    });
-  }
-
-  return supabaseInstance;
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Supabase URL and Anon Key must be provided in environment variables"
+  );
 }
 
-// Export for compatibility
-export const supabase =
-  typeof window !== "undefined" ? getSupabaseClient() : null;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
