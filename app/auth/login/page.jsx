@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthTransition from "@/app/components/auth/AuthTransition";
@@ -7,7 +7,7 @@ import AuthCard from "@/app/components/auth/AuthCard";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
-import { supabase } from "@/app/config/supabaseConfig";
+// import { supabase } from "@/app/config/supabaseConfig";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,6 +18,18 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [supabase, setSupabase] = useState(null);
+
+  useEffect(() => {
+    // Dynamically import Supabase client only on the client side
+    import("@/app/config/supabaseConfig").then((module) => {
+      setSupabase(module.supabase);
+    });
+  }, []);
+
+  if (!supabase) {
+    return <div>Loading...</div>;
+  }
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
