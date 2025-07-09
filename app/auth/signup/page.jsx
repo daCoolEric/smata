@@ -20,6 +20,18 @@ export default function SignupPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [supabase, setSupabase] = useState(null);
+
+  useEffect(() => {
+    // Dynamically import Supabase client only on the client side
+    import("@/app/config/supabaseConfig").then((module) => {
+      setSupabase(module.supabase);
+    });
+  }, []);
+
+  if (!supabase) {
+    return <div>Loading...</div>;
+  }
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
