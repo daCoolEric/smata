@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Dynamically import Supabase client only on the client side
-    import("@/app/config/supabaseConfig").then((module) => {
+    import("@/app/config/supabaseClient").then((module) => {
       setSupabase(module.supabase);
     });
   }, []);
