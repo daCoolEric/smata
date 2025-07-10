@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 
 import AuthTransition from "@/app/components/auth/AuthTransition";
 import AuthCard from "@/app/components/auth/AuthCard";
-import Button from "@/app/components/ui/Button";
-import Link from "next/link";
+// import Button from "@/app/components/ui/Button";
+// import Link from "next/link";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
@@ -35,11 +35,11 @@ export default function VerifyEmailPage() {
 
           <p className="text-gray-700">{getStatusMessage()}</p>
 
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <Link href="/auth/signup">
               <Button className="w-full">Back to Sign Up</Button>
             </Link>
-          </div>
+          </div> */}
 
           <div className="mt-6 text-sm text-gray-600">
             Didn't receive the email? Check your spam folder or try again.
