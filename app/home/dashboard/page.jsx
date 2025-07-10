@@ -27,7 +27,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Confetti from "react-confetti";
 import { useTheme } from "next-themes";
-import { supabase } from "../../config/supabaseConfig";
+import { supabase } from "../../config/supabaseClient";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Today");
