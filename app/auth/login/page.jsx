@@ -53,7 +53,7 @@ export default function LoginPage() {
       if (error) throw error;
 
       // Redirect to dashboard after successful login
-      router.push("/home/dashboard");
+      router.push("/profile/setup");
     } catch (err) {
       setError(err.message || "Login failed. Please check your credentials.");
     } finally {

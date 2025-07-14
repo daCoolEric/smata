@@ -79,6 +79,7 @@ export default function SignupPage() {
             first_name: formData.firstName,
             last_name: formData.lastName,
           },
+          emailRedirectTo: "https://www.getsmata.xyz/auth/login",
         },
       });
 

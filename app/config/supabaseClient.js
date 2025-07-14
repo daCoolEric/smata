@@ -19,5 +19,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    flowType: "pkce",
+    redirectTo: "https://www.getsmata.xyz/auth/login",
   },
 });
