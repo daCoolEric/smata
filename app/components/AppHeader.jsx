@@ -18,6 +18,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { supabase } from "../config/supabaseClient";
 
 const navItems = [
   { name: "Dashboard", path: "/home/dashboard" },
@@ -35,10 +36,11 @@ export default function AppHeader({
   toggleTheme,
   handleSignOut,
 }) {
-  const { user, signOutUser } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const now = new Date();
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState(null);
 
   const currentTime = now.toLocaleTimeString([], {
     hour: "2-digit",
@@ -51,6 +53,27 @@ export default function AppHeader({
     day: "numeric",
     year: "numeric",
   });
+  useEffect(() => {
+    const fetchProfilePhoto = async () => {
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("profile_photo_url")
+            .eq("id", user.id)
+            .single();
+
+          if (!error && data?.profile_photo_url) {
+            setProfilePhotoUrl(data.profile_photo_url);
+          }
+        } catch (error) {
+          console.error("Error fetching profile photo:", error);
+        }
+      }
+    };
+
+    fetchProfilePhoto();
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -61,7 +84,7 @@ export default function AppHeader({
   const handleSignOutUser = async () => {
     // setIsSigningIn(true);
     try {
-      await signOutUser();
+      await signOut();
     } catch (error) {
       console.error("Sign in error:", error);
     } finally {
@@ -134,20 +157,25 @@ export default function AppHeader({
 
               {/* User Profile */}
               <div className="flex items-center gap-2">
-                {user?.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-purple-100 dark:border-purple-900"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center">
-                    <span className="text-purple-600 dark:text-purple-300 font-medium">
-                      {user?.displayName?.charAt(0) || "U"}
-                    </span>
-                  </div>
-                )}
+                <button
+                  onClick={() => router.push("/profile/setup")}
+                  className="focus:outline-none"
+                >
+                  {profilePhotoUrl ? (
+                    <img
+                      src={profilePhotoUrl}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-purple-100 dark:border-purple-900"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center">
+                      <span className="text-purple-600 dark:text-purple-300 font-medium">
+                        {user?.displayName?.charAt(0) || "U"}
+                      </span>
+                    </div>
+                  )}
+                </button>
                 <button
                   onClick={handleSignOutUser}
                   className="hidden md:flex items-center gap-1 px-4 py-2 font-medium text-sm text-[hsl(var(--foreground))] hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-full transition-all duration-200"
@@ -219,19 +247,29 @@ export default function AppHeader({
               <Coins className="w-4 h-4 text-yellow-500" />
               <span className="text-xs font-medium">{coins}</span>
             </div>
-            {user?.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border-2 border-purple-100 dark:border-purple-900"
-                referrerPolicy="no-referrer"
-              />
+            {profilePhotoUrl ? (
+              <button
+                onClick={() => router.push("/profile/setup")}
+                className="focus:outline-none"
+              >
+                <img
+                  src={profilePhotoUrl}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover border-2 border-purple-100 dark:border-purple-900"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center">
-                <span className="text-purple-600 dark:text-purple-300 font-medium">
-                  {user?.displayName?.charAt(0) || "U"}
-                </span>
-              </div>
+              <button
+                onClick={() => router.push("/profile/setup")}
+                className="focus:outline-none"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 flex items-center justify-center">
+                  <span className="text-purple-600 dark:text-purple-300 font-medium">
+                    {user?.displayName?.charAt(0) || "U"}
+                  </span>
+                </div>
+              </button>
             )}
           </div>
         </div>

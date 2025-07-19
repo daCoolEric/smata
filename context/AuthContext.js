@@ -1,78 +1,48 @@
+// app/context/AuthProvider.js
 "use client";
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { auth } from "../lib/firebase";
-import {
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
+
+import { supabase } from "@/app/config/supabaseClient";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // Track initial loading
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        setUser(user);
-        setIsLoading(false);
-        setError(null);
-      },
-      (error) => {
-        setError(error);
-        setIsLoading(false);
-      }
-    );
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
 
-    return () => unsubscribe();
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
-    try {
-      setIsLoading(true);
-      await signInWithPopup(auth, new GoogleAuthProvider());
-    } catch (error) {
-      setError(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const value = {
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    signOut: async () => {
+      await supabase.auth.signOut();
+    },
   };
-
-  const signOutUser = async () => {
-    try {
-      setIsLoading(true);
-      await signOut(auth);
-    } catch (error) {
-      setError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const value = useMemo(
-    () => ({
-      user,
-      isLoading,
-      error,
-      signInWithGoogle,
-      signOutUser,
-      isAuthenticated: !!user,
-    }),
-    [user, isLoading, error]
-  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

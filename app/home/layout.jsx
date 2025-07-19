@@ -11,7 +11,7 @@ import Link from "next/link";
 import Confetti from "react-confetti";
 import AppFooter from "../components/AppFooter";
 import { useTheme } from "next-themes";
-
+import { supabase } from "../config/supabaseClient";
 const navItems = [
   { name: "Dashboard", path: "/home/dashboard" },
   { name: "Focus", path: "/home/focus" },
@@ -30,7 +30,7 @@ const navIcons = {
 };
 
 export default function DashboardLayout({ children }) {
-  const { user, isLoading, signOutUser } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const [coins, setCoins] = useState(250);
   const [health, setHealth] = useState(80);
@@ -47,6 +47,14 @@ export default function DashboardLayout({ children }) {
 
   useEffect(() => {
     setMounted(true);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event, session);
+      // You can store the session in state or context here
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -98,7 +106,7 @@ export default function DashboardLayout({ children }) {
         setTimeout(() => setShowConfetti(false), 3000);
       }
 
-      await signOutUser();
+      await signOut();
       router.push("/auth/login");
     } catch (error) {
       console.error("Error signing out:", error);

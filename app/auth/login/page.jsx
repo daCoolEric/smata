@@ -7,7 +7,6 @@ import AuthCard from "@/app/components/auth/AuthCard";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
 import SocialButtons from "@/app/components/auth/SocialButtons";
-// import { supabase } from "@/app/config/supabaseConfig";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,15 +44,31 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+      // 1. Sign in the user
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email: formData.email,
+          password: formData.password,
+        }
+      );
 
-      if (error) throw error;
+      if (authError) throw authError;
 
-      // Redirect to dashboard after successful login
-      router.push("/profile/setup");
+      // 2. Check if profile exists in your database
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError && profileError.code !== "PGRST116") {
+        // Handle error (except "no rows" error)
+        console.error("Profile check error:", profileError);
+        return;
+      }
+
+      router.push(profile ? "/home/dashboard" : "/profile/setup");
     } catch (err) {
       setError(err.message || "Login failed. Please check your credentials.");
     } finally {
@@ -67,7 +82,10 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${
+            // Include the intended destination in the callback
+            window.location.origin + "/profile/setup"
+          }`,
         },
       });
       if (error) throw error;
