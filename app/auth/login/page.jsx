@@ -45,12 +45,13 @@ export default function LoginPage() {
 
     try {
       // 1. Sign in the user
-      const { data, error: authError } = await supabase.auth.signInWithPassword(
-        {
-          email: formData.email,
-          password: formData.password,
-        }
-      );
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
       if (authError) throw authError;
 
