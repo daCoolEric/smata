@@ -32,7 +32,25 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <BrainCircuit className="w-8 h-8 text-purple-600" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            version="1.0"
+            width="40"
+            height="40"
+            viewBox="0 0 172 132"
+            preserveAspectRatio="xMidYMid meet"
+            class="w-10 h-10 fill-purple-600"
+          >
+            <g
+              transform="translate(0.000000,132.000000) scale(0.100000,-0.100000)"
+              stroke="none"
+            >
+              <path d="M290 785 c0 -234 0 -428 0 -432 0 -5 39 -11 87 -15 118 -10 269 -36 345 -59 35 -10 66 -19 71 -19 4 0 7 188 7 419 l0 418 -72 30 c-122 50 -280 83 -405 83 l-33 0 0 -425z" />
+              <path d="M1232 1199 c-94 -11 -180 -33 -269 -71 l-73 -30 0 -420 c0 -395 1 -419 18 -414 115 37 348 76 448 76 l44 0 0 435 0 435 -47 -1 c-27 -1 -81 -5 -121 -10z" />
+              <path d="M148 1051 l-48 -15 0 -438 0 -438 58 0 c59 1 177 10 387 32 l120 12 -75 18 c-41 9 -140 23 -220 29 -80 7 -151 16 -157 22 -10 7 -13 104 -15 401 l-3 392 -47 -15z" />
+              <path d="M1490 675 c0 -302 -3 -395 -12 -403 -7 -5 -62 -13 -123 -17 -100 -6 -311 -38 -321 -48 -6 -6 291 -36 434 -43 l122 -7 0 440 0 439 -50 16 -50 16 0 -393z" />
+            </g>
+          </svg>
           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Smata
           </span>

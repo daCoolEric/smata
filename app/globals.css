@@ -154,4 +154,41 @@
     color: #6b7280;
     cursor: not-allowed;
   }
+
+  @keyframes bookOpen {
+    0%,
+    100% {
+      transform: rotateY(0deg);
+    }
+    50% {
+      transform: rotateY(-30deg);
+    }
+  }
+
+  @keyframes typing {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes progress {
+    0% {
+      width: 0%;
+      margin-left: 0;
+    }
+    50% {
+      width: 100%;
+      margin-left: 0;
+    }
+    100% {
+      width: 0%;
+      margin-left: 100%;
+    }
+  }
 }

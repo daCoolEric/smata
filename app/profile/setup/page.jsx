@@ -6,6 +6,7 @@ import Button from "@/app/components/ui/Button";
 import Select from "@/app/components/ui/Select";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/app/config/supabaseClient";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function ProfileSetup() {
   const router = useRouter();
@@ -105,8 +106,12 @@ export default function ProfileSetup() {
   // Loading state
   if (isLoading || isLoadingProfile) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
+        <DotLottieReact
+          src="https://lottie.host/24418024-bae1-4757-87b1-3429d8f05d97/6CTtMcc5wi.lottie"
+          loop
+          autoplay
+        />
       </div>
     );
   }

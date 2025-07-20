@@ -1,7 +1,6 @@
 // app/dashboard/page.jsx
 "use client";
 import { useAuth } from "@/context/AuthContext";
-
 import {
   Clock,
   Calendar,
@@ -40,70 +39,190 @@ export default function Dashboard() {
   const [mockExams, setMockExams] = useState([]);
   const [recentNotes, setRecentNotes] = useState([]);
   const [studyGroups, setStudyGroups] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
 
-  const { user, loading } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { user, loading: authLoading } = useAuth();
+  const { theme } = useTheme();
   const router = useRouter();
 
-  // Redirect if not authenticated (after loading completes)
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push("/auth/login");
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
-  // Initialize from localStorage
+  // Fetch all user data from Supabase
   useEffect(() => {
-    setMounted(true);
+    if (!user?.id) return;
 
-    // Load game stats
-    const savedState = JSON.parse(localStorage.getItem("smataGameState")) || {};
-    setCoins(savedState.coins || 250);
-    setHealth(savedState.health || 80);
-    setStreak(savedState.streak || 3);
-    setCompletedSessions(savedState.completedSessions || 0);
+    const fetchUserData = async () => {
+      try {
+        setLoadingData(true);
 
-    // Load other data
-    const savedExams = JSON.parse(localStorage.getItem("smataExams")) || [
-      {
-        id: 1,
-        subject: "Calculus",
-        date: "May 25, 2023",
-        daysLeft: 7,
-      },
-    ];
-    setMockExams(savedExams);
+        // Fetch user stats
+        const { data: stats, error: statsError } = await supabase
+          .from("user_stats")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
 
-    const savedNotes = JSON.parse(localStorage.getItem("smataNotes")) || [];
-    setRecentNotes(savedNotes);
+        if (statsError && statsError.code !== "PGRST116") throw statsError;
 
-    const savedGroups = JSON.parse(localStorage.getItem("smataGroups")) || [];
-    setStudyGroups(savedGroups);
-  }, []);
+        if (stats) {
+          setCoins(stats.coins || 250);
+          setHealth(stats.health || 80);
+          setStreak(stats.streak || 3);
+          setCompletedSessions(stats.completed_sessions || 0);
+        } else {
+          // Initialize stats if they don't exist
+          const { error: insertError } = await supabase
+            .from("user_stats")
+            .insert([
+              {
+                user_id: user.id,
+                coins: 250,
+                health: 80,
+                streak: 3,
+                completed_sessions: 0,
+              },
+            ]);
 
-  // Save game state when it changes
+          if (insertError) throw insertError;
+        }
+
+        // Fetch exams
+        const { data: exams, error: examsError } = await supabase
+          .from("exams")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: true });
+
+        if (examsError) throw examsError;
+        setMockExams(exams || []);
+
+        // Fetch notes
+        const { data: notes, error: notesError } = await supabase
+          .from("notes")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (notesError) throw notesError;
+        setRecentNotes(notes || []);
+
+        // Fetch study groups
+        const { data: groups, error: groupsError } = await supabase
+          .from("user_study_groups")
+          .select(
+            `
+            study_groups (
+              id,
+              name,
+              subject,
+              member_count
+            )
+          `
+          )
+          .eq("user_id", user.id);
+
+        if (groupsError) throw groupsError;
+        setStudyGroups(
+          groups?.map((g) => ({
+            id: g.study_groups.id,
+            name: g.study_groups.name,
+            subject: g.study_groups.subject,
+            members: g.study_groups.member_count,
+          })) || []
+        );
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoadingData(false);
+        setMounted(true);
+      }
+    };
+
+    fetchUserData();
+  }, [user?.id]);
+
+  // Update stats in Supabase when they change
   useEffect(() => {
-    if (!mounted) return;
-    localStorage.setItem(
-      "smataGameState",
-      JSON.stringify({ coins, health, streak, completedSessions })
-    );
-  }, [coins, health, streak, completedSessions, mounted]);
+    if (!mounted || !user?.id) return;
 
-  // Save other data when changed
-  useEffect(() => {
-    if (mounted) localStorage.setItem("smataExams", JSON.stringify(mockExams));
-  }, [mockExams, mounted]);
+    const updateStats = async () => {
+      try {
+        const { error } = await supabase
+          .from("user_stats")
+          .upsert({
+            user_id: user.id,
+            coins,
+            health,
+            streak,
+            completed_sessions: completedSessions,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", user.id);
 
-  useEffect(() => {
-    if (mounted)
-      localStorage.setItem("smataNotes", JSON.stringify(recentNotes));
-  }, [recentNotes, mounted]);
+        if (error) throw error;
+      } catch (err) {
+        console.error("Error updating stats:", err);
+      }
+    };
 
-  useEffect(() => {
-    if (mounted)
-      localStorage.setItem("smataGroups", JSON.stringify(studyGroups));
-  }, [studyGroups, mounted]);
+    updateStats();
+  }, [coins, health, streak, completedSessions, mounted, user?.id]);
+
+  // Add a new study session
+  const addStudySession = async () => {
+    try {
+      const newSessions = completedSessions + 1;
+      const newCoins = coins + 10;
+
+      // Optimistic UI update
+      setCompletedSessions(newSessions);
+      setCoins(newCoins);
+
+      // Update in Supabase
+      await supabase
+        .from("user_stats")
+        .update({
+          completed_sessions: newSessions,
+          coins: newCoins,
+        })
+        .eq("user_id", user.id);
+    } catch (err) {
+      console.error("Error adding session:", err);
+      // Rollback on error
+      setCompletedSessions(completedSessions);
+      setCoins(coins);
+    }
+  };
+
+  // Claim daily reward
+  const claimDailyReward = async () => {
+    if (streak > 0) {
+      try {
+        const newCoins = coins + streak * 10;
+
+        // Optimistic UI update
+        setCoins(newCoins);
+        setShowConfetti(true);
+
+        // Update in Supabase
+        await supabase
+          .from("user_stats")
+          .update({ coins: newCoins })
+          .eq("user_id", user.id);
+
+        setTimeout(() => setShowConfetti(false), 2000);
+      } catch (err) {
+        console.error("Error claiming reward:", err);
+        setCoins(coins); // Rollback on error
+      }
+    }
+  };
 
   const now = new Date();
 
@@ -111,7 +230,7 @@ export default function Dashboard() {
   if (!mounted) return null;
 
   // Show loading state
-  if (loading) {
+  if (authLoading || loadingData) {
     return (
       <div
         className={`min-h-screen flex items-center justify-center ${
@@ -127,28 +246,8 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className={"bg-[hsl(var(--main-bg))] min-h-screen p-4 md:p-6"}>
+    <div className="bg-[hsl(var(--main-bg))] min-h-screen p-4 md:p-6">
       {showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
-      {console.log(supabase)}
-
-      {/* Theme Toggle Button
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={toggleTheme}
-          className={`p-2 rounded-full ${
-            theme === "dark"
-              ? "bg-gray-700 text-yellow-300"
-              : "bg-gray-200 text-gray-700"
-          }`}
-          aria-label="Toggle theme"
-        >
-          {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
-          ) : (
-            <MoonIcon className="h-5 w-5" />
-          )}
-        </button>
-      </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
         {/* Left Column */}
@@ -168,7 +267,10 @@ export default function Dashboard() {
                 : now.getHours() < 18
                 ? "Afternoon"
                 : "Evening"}
-              {user?.displayName ? `, ${user.displayName}` : ""}.
+              {user?.user_metadata?.first_name
+                ? `, ${user.user_metadata.first_name}`
+                : ""}
+              .
             </h2>
 
             <div className="w-full bg-[hsl(var(--progress-bar-bg))] rounded-full h-2.5 mb-4">
@@ -320,10 +422,7 @@ export default function Dashboard() {
                     Today's Study Sessions
                   </h4>
                   <button
-                    onClick={() => {
-                      setCompletedSessions((prev) => prev + 1);
-                      setCoins((prev) => prev + 10);
-                    }}
+                    onClick={addStudySession}
                     className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1"
                   >
                     <Plus className="w-3 h-3" /> Add Session
@@ -373,7 +472,7 @@ export default function Dashboard() {
                             {exam.subject}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {exam.date} • {exam.daysLeft} days left
+                            {exam.date} • {exam.days_left} days left
                           </p>
                         </div>
                       </div>
@@ -412,7 +511,8 @@ export default function Dashboard() {
                           {note.title}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {note.subject} • {note.date}
+                          {note.subject} •{" "}
+                          {new Date(note.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     ))
@@ -521,13 +621,7 @@ export default function Dashboard() {
             </div>
 
             <button
-              onClick={() => {
-                if (streak > 0) {
-                  setCoins((prev) => prev + streak * 10);
-                  setShowConfetti(true);
-                  setTimeout(() => setShowConfetti(false), 2000);
-                }
-              }}
+              onClick={claimDailyReward}
               className={`w-full py-2 rounded-lg font-medium flex items-center justify-center gap-2 ${
                 streak > 0
                   ? "bg-white text-purple-600"
